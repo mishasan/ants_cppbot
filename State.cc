@@ -22,7 +22,7 @@ void State::setup()
     grid = vector<vector<Square> >(rows, vector<Square>(cols, Square()));
 };
 
-//resets all non-water squares to land and clears the bots ant vector
+// clears the bots ant vector and resets cells
 void State::reset()
 {
     myAnts.clear();
@@ -30,11 +30,17 @@ void State::reset()
     myHills.clear();
     enemyHills.clear();
     food.clear();
-    for(int row=0; row<rows; row++)
+    resetCellsToLand();
+};
+
+//resets all non-water squares to land
+void State::resetCellsToLand()
+{
+	for(int row=0; row < rows; row++)
         for(int col=0; col<cols; col++)
             if(!grid[row][col].isWater)
                 grid[row][col].reset();
-};
+}
 
 //outputs move information to the engine
 void State::makeMove(const Location &loc, int direction)
@@ -140,128 +146,152 @@ ostream& operator<<(ostream &os, const State &state)
 //input function
 istream& operator>>(istream &is, State &state)
 {
-    int row, col, player;
-    string inputType, junk;
+	readTurnType(is, state);
 
-    //finds out which turn it is
+    if(state.turn == 0)
+    {
+        readGameParameters(is, state);
+    }
+    else
+    {
+        readCurrentTurnToState(is, state);
+    }
+
+    return is;
+}
+
+//finds out which turn it is
+void readTurnType(istream &is, State &state)
+{
+	string inputType;
     while(is >> inputType)
     {
         if(inputType == "end")
         {
             state.gameover = 1;
-            break;
+            break;	//TODO: warum break und nicht return?
         }
         else if(inputType == "turn")
         {
             is >> state.turn;
             break;
         }
+        else
+		{
+			//unknown line
+			string junk;
+	        getline(is, junk);
+		}
+    }
+}
+
+//reads game parameters
+void readGameParameters(istream &is, State &state)
+{
+	string inputType;
+
+    while(is >> inputType)
+    {
+        if(inputType == "loadtime")
+            is >> state.loadtime;
+        else if(inputType == "turntime")
+            is >> state.turntime;
+        else if(inputType == "rows")
+            is >> state.rows;
+        else if(inputType == "cols")
+            is >> state.cols;
+        else if(inputType == "turns")
+            is >> state.turns;
+        else if(inputType == "player_seed")
+            is >> state.seed;
+        else if(inputType == "viewradius2")
+        {
+            is >> state.viewradius;
+            state.viewradius = sqrt(state.viewradius);
+        }
+        else if(inputType == "attackradius2")
+        {
+            is >> state.attackradius;
+            state.attackradius = sqrt(state.attackradius);
+        }
+        else if(inputType == "spawnradius2")
+        {
+            is >> state.spawnradius;
+            state.spawnradius = sqrt(state.spawnradius);
+        }
+        else if(inputType == "ready") //end of parameter input
+        {
+            state.timer.start();
+            break;
+        }
+        else
+		{
+			//unknown line
+			string junk;
+			getline(is, junk);
+		}
+    }
+}
+
+void readCurrentTurnToState(istream &is, State &state)
+{
+	string inputType, junk;
+	int row, col, player;
+	while(is >> inputType)
+    {
+        if(inputType == "w") //water square
+        {
+            is >> row >> col;
+            state.grid[row][col].isWater = 1;
+        }
+        else if(inputType == "f") //food square
+        {
+            is >> row >> col;
+            state.grid[row][col].isFood = 1;
+            state.food.push_back(Location(row, col));
+        }
+        else if(inputType == "a") //live ant square
+        {
+            is >> row >> col >> player;
+            state.grid[row][col].ant = player;
+            if(player == 0)
+                state.myAnts.push_back(Location(row, col));
+            else
+                state.enemyAnts.push_back(Location(row, col));
+        }
+        else if(inputType == "d") //dead ant square
+        {
+            is >> row >> col >> player;
+            state.grid[row][col].deadAnts.push_back(player);
+        }
+        else if(inputType == "h")
+        {
+            is >> row >> col >> player;
+            state.grid[row][col].isHill = 1;
+            state.grid[row][col].hillPlayer = player;
+            if(player == 0)
+                state.myHills.push_back(Location(row, col));
+            else
+                state.enemyHills.push_back(Location(row, col));
+
+        }
+        else if(inputType == "players") //player information
+            is >> state.noPlayers;
+        else if(inputType == "scores") //score information
+        {
+            state.scores = vector<double>(state.noPlayers, 0.0);
+            for(int p=0; p<state.noPlayers; p++)
+                is >> state.scores[p];
+        }
+        else if(inputType == "go") //end of turn input
+        {
+            if(state.gameover)
+                is.setstate(std::ios::failbit);
+            else
+                state.timer.start();
+            break;
+        }
         else //unknown line
             getline(is, junk);
-    }
-
-    if(state.turn == 0)
-    {
-        //reads game parameters
-        while(is >> inputType)
-        {
-            if(inputType == "loadtime")
-                is >> state.loadtime;
-            else if(inputType == "turntime")
-                is >> state.turntime;
-            else if(inputType == "rows")
-                is >> state.rows;
-            else if(inputType == "cols")
-                is >> state.cols;
-            else if(inputType == "turns")
-                is >> state.turns;
-            else if(inputType == "player_seed")
-                is >> state.seed;
-            else if(inputType == "viewradius2")
-            {
-                is >> state.viewradius;
-                state.viewradius = sqrt(state.viewradius);
-            }
-            else if(inputType == "attackradius2")
-            {
-                is >> state.attackradius;
-                state.attackradius = sqrt(state.attackradius);
-            }
-            else if(inputType == "spawnradius2")
-            {
-                is >> state.spawnradius;
-                state.spawnradius = sqrt(state.spawnradius);
-            }
-            else if(inputType == "ready") //end of parameter input
-            {
-                state.timer.start();
-                break;
-            }
-            else    //unknown line
-                getline(is, junk);
-        }
-    }
-    else
-    {
-        //reads information about the current turn
-        while(is >> inputType)
-        {
-            if(inputType == "w") //water square
-            {
-                is >> row >> col;
-                state.grid[row][col].isWater = 1;
-            }
-            else if(inputType == "f") //food square
-            {
-                is >> row >> col;
-                state.grid[row][col].isFood = 1;
-                state.food.push_back(Location(row, col));
-            }
-            else if(inputType == "a") //live ant square
-            {
-                is >> row >> col >> player;
-                state.grid[row][col].ant = player;
-                if(player == 0)
-                    state.myAnts.push_back(Location(row, col));
-                else
-                    state.enemyAnts.push_back(Location(row, col));
-            }
-            else if(inputType == "d") //dead ant square
-            {
-                is >> row >> col >> player;
-                state.grid[row][col].deadAnts.push_back(player);
-            }
-            else if(inputType == "h")
-            {
-                is >> row >> col >> player;
-                state.grid[row][col].isHill = 1;
-                state.grid[row][col].hillPlayer = player;
-                if(player == 0)
-                    state.myHills.push_back(Location(row, col));
-                else
-                    state.enemyHills.push_back(Location(row, col));
-
-            }
-            else if(inputType == "players") //player information
-                is >> state.noPlayers;
-            else if(inputType == "scores") //score information
-            {
-                state.scores = vector<double>(state.noPlayers, 0.0);
-                for(int p=0; p<state.noPlayers; p++)
-                    is >> state.scores[p];
-            }
-            else if(inputType == "go") //end of turn input
-            {
-                if(state.gameover)
-                    is.setstate(std::ios::failbit);
-                else
-                    state.timer.start();
-                break;
-            }
-            else //unknown line
-                getline(is, junk);
-        }
-    }
-
-    return is;
-};
+	}
+}

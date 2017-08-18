@@ -54,6 +54,7 @@ struct State
 
     void setup();
     void reset();
+	void resetCellsToLand();
 
     void makeMove(const Location &loc, int direction);
 
@@ -65,5 +66,8 @@ struct State
 
 std::ostream& operator<<(std::ostream &os, const State &state);
 std::istream& operator>>(std::istream &is, State &state);
+void readTurnType(std::istream &is, State &state);
+void readGameParameters(std::istream &is, State &state);
+void readCurrentTurnToState(std::istream &is, State &state);
 
 #endif //STATE_H_
