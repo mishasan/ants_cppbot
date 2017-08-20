@@ -43,13 +43,13 @@ void State::resetCellsToLand()
 }
 
 //outputs move information to the engine
-void State::makeMove(const Location &loc, int direction)
+void State::makeMove(const Location &oldLoc, int moveDirection)
 {
-    cout << "o " << loc.row << " " << loc.col << " " << CDIRECTIONS[direction] << endl;
+    cout << "o " << oldLoc.row << " " << oldLoc.col << " " << CDIRECTIONS[moveDirection] << endl;
 
-    Location nLoc = getLocation(loc, direction);
-    grid[nLoc.row][nLoc.col].ant = grid[loc.row][loc.col].ant;
-    grid[loc.row][loc.col].ant = -1;
+    Location newLoc = getLocation(oldLoc, moveDirection);
+    grid[newLoc.row][newLoc.col].ant = grid[oldLoc.row][oldLoc.col].ant;
+    grid[oldLoc.row][oldLoc.col].ant = -1;
 };
 
 //returns the euclidean distance between two locations with the edges wrapped
@@ -80,28 +80,26 @@ Location State::getLocation(const Location &loc, int direction)
 */
 void State::updateVisionInformation()
 {
-    std::queue<Location> locQueue;
-    Location sLoc, cLoc, nLoc;
-
     for(int a=0; a<(int) myAnts.size(); a++)
     {
-        sLoc = myAnts[a];
-        locQueue.push(sLoc);
+        const Location antLoc = myAnts[a];
+        std::queue<Location> locQueue;
+		locQueue.push(antLoc);
 
         std::vector<std::vector<bool> > visited(rows, std::vector<bool>(cols, 0));
-        grid[sLoc.row][sLoc.col].isVisible = 1;
-        visited[sLoc.row][sLoc.col] = 1;
+        grid[antLoc.row][antLoc.col].isVisible = 1;
+        visited[antLoc.row][antLoc.col] = 1;
 
         while(!locQueue.empty())
         {
-            cLoc = locQueue.front();
+            const Location curLoc = locQueue.front();
             locQueue.pop();
 
             for(int d=0; d<TDIRECTIONS; d++)
             {
-                nLoc = getLocation(cLoc, d);
+                const Location nLoc = getLocation(curLoc, d);
 
-                if(!visited[nLoc.row][nLoc.col] && distance(sLoc, nLoc) <= viewradius)
+                if(!visited[nLoc.row][nLoc.col] && distance(antLoc, nLoc) <= viewradius)
                 {
                     grid[nLoc.row][nLoc.col].isVisible = 1;
                     locQueue.push(nLoc);
