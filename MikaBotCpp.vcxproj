@@ -73,6 +73,7 @@
   </ItemDefinitionGroup>
   <ItemGroup>
     <ClCompile Include="Bot.cc" />
+    <ClCompile Include="Location.cc" />
     <ClCompile Include="MyBot.cc" />
     <ClCompile Include="State.cc" />
   </ItemGroup>
