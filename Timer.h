@@ -5,8 +5,6 @@
     struct for checking how long it has been since the start of the turn.
 */
 #ifdef _WIN32 //Windows timer (DON'T USE THIS TIMER UNLESS YOU'RE ON WINDOWS!)
-    #include <io.h>
-    #include <windows.h>
 	#include <ctime>
 
     struct Timer
