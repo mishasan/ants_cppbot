@@ -3,10 +3,6 @@
 
 #include <fstream>
 
-#ifndef DEBUG
-    //#define DEBUG
-#endif
-
 /*
     struct for debugging - this is gross but can be used pretty much like an ofstream,
                            except the debug messages are stripped while compiling if
@@ -30,7 +26,7 @@ struct Bug
     //opens the specified file
     inline void open(const std::string &filename)
     {
-        #ifdef DEBUG
+        #ifdef _DEBUG
             file.open(filename.c_str());
         #endif
     };
@@ -38,7 +34,7 @@ struct Bug
     //closes the ofstream
     inline void close()
     {
-        #ifdef DEBUG
+        #ifdef _DEBUG
             file.close();
         #endif
     };
@@ -47,7 +43,7 @@ struct Bug
 //output function for endl
 inline Bug& operator<<(Bug &bug, std::ostream& (*manipulator)(std::ostream&))
 {
-    #ifdef DEBUG
+    #ifdef _DEBUG
         bug.file << manipulator;
     #endif
 
@@ -58,7 +54,7 @@ inline Bug& operator<<(Bug &bug, std::ostream& (*manipulator)(std::ostream&))
 template <class T>
 inline Bug& operator<<(Bug &bug, const T &t)
 {
-    #ifdef DEBUG
+    #ifdef _DEBUG
         bug.file << t;
     #endif
 
