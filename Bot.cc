@@ -32,18 +32,13 @@ void Bot::makeMoves()
     state.bug << state << endl;
 
     //picks out moves for each ant
-    for(int ant=0; ant<(int)state.myAnts.size(); ant++)
+    for(size_t ant = 0; ant < state.myAnts.size(); ++ant)
     {
-        for(int d=0; d<TDIRECTIONS; d++)
-        {
-            Location loc = state.getLocation(state.myAnts[ant], d);
-
-            if(!state.grid[loc.row][loc.col].isWater)
-            {
-                state.makeMove(state.myAnts[ant], d);
-                break;
-            }
-        }
+		const Location locAnt = state.myAnts[ant];
+		Location locClosestFood = state.getClosestFood(locAnt);
+		
+		int dirFood = state.getAMovingDirectionTo(locAnt, locClosestFood); // TDIRECTIONS
+        state.makeMove(locAnt, dirFood);
     }
 
     state.bug << "time taken: " << state.timer.getTime() << "ms" << endl << endl;

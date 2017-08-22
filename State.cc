@@ -46,6 +46,7 @@ void State::resetCellsToLand()
 void State::makeMove(const Location &oldLoc, int moveDirection)
 {
     cout << "o " << oldLoc.row << " " << oldLoc.col << " " << CDIRECTIONS[moveDirection] << endl;
+	bug << "o " << oldLoc.row << " " << oldLoc.col << " " << CDIRECTIONS[moveDirection] << endl;
 
     Location newLoc = getLocation(oldLoc, moveDirection);
     grid[newLoc.row][newLoc.col].ant = grid[oldLoc.row][oldLoc.col].ant;
@@ -68,6 +69,81 @@ Location State::getLocation(const Location &loc, int direction)
     return Location( (loc.row + DIRECTIONS[direction][0] + rows) % rows,
                      (loc.col + DIRECTIONS[direction][1] + cols) % cols );
 };
+
+//TODO: return some type of TDIRECTIONS Type;
+//
+int State::getAMovingDirectionTo(const Location &locFrom, const Location &locTo)
+{
+	int dirBestDirection = 0;
+	double dMinDist = numeric_limits<double>::max();
+	for(int dir = 0; dir < TDIRECTIONS; ++dir)
+	{
+		const Location locTestDirection = getLocation(locFrom, dir);
+		if(!isTargetPositionFreeToGo(locTestDirection))
+		{
+			continue;
+		}
+
+		const double dDist = distance(locTestDirection, locTo);
+		if(dDist < dMinDist)
+		{
+			dMinDist = dDist;
+			dirBestDirection = dir;
+		}
+	}
+	return dirBestDirection;
+}
+
+bool State::isTargetPositionFreeToGo(const Location& locTo)
+{
+	const Square& sqTo = grid[locTo.row][locTo.col];
+	if(sqTo.isWater || isAntOnPosition(locTo))
+	{
+		return false;
+	}
+
+	return true;
+}
+
+bool State::isAntOnPosition(const Location& loc)
+{
+	const Square& sqTo = grid[loc.row][loc.col];
+	return sqTo.ant >= 0;
+}
+
+Location State::getClosestFood(const Location &locFrom)
+{
+	if (food.empty())
+	{
+		bug << "no food found from pos" << locFrom << endl;
+		return locFrom;
+	}
+
+	double dMinDist = std::numeric_limits<double>::max();
+	std::vector<Location>::iterator itClosestFood = food.begin();
+
+	for(std::vector<Location>::iterator it = food.begin(); it != food.end(); ++it)
+	{
+		double dDist = distance(locFrom, *it);
+		
+		//	food on same position as ant or error in distance?
+		if(dDist <= numeric_limits<double>::epsilon())
+		{
+			continue;
+		}
+		
+		// find food with min distance
+		if(dDist < dMinDist)
+		{
+			itClosestFood = it;
+			dMinDist = dDist;
+		}
+	}
+
+	bug << "closest food found at pos" << *itClosestFood << endl;
+
+	return *itClosestFood;
+}
 
 /*
     This function will update update the lastSeen value for any squares currently

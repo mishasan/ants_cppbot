@@ -2,14 +2,12 @@
 #define STATE_H_
 
 #include <iostream>
-#include <stdio.h>
 #include <cstdlib>
 #include <cmath>
 #include <string>
 #include <vector>
 #include <queue>
 #include <stack>
-#include <stdint.h>
 
 #include "Timer.h"
 #include "Bug.h"
@@ -38,7 +36,7 @@ struct State
     double loadtime, turntime;
     std::vector<double> scores;
     bool gameover;
-    int64_t seed;
+    long long seed;
 
     std::vector<std::vector<Square> > grid;
     std::vector<Location> myAnts, enemyAnts, myHills, enemyHills, food;
@@ -60,6 +58,10 @@ struct State
 
     double distance(const Location &loc1, const Location &loc2);
     Location getLocation(const Location &startLoc, int direction);
+	Location getClosestFood(const Location &locFrom);
+	int getAMovingDirectionTo(const Location &locFrom, const Location &locTo);
+	bool isTargetPositionFreeToGo(const Location& locTo);
+	bool isAntOnPosition(const Location& locTo);
 
     void updateVisionInformation();
 };
