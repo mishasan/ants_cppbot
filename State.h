@@ -58,8 +58,8 @@ struct State
 
     double distance(const Location &loc1, const Location &loc2);
     Location getLocation(const Location &startLoc, int direction);
-	Location getClosestFood(const Location &locFrom);
-	int getAMovingDirectionTo(const Location &locFrom, const Location &locTo);
+	bool getClosestFood(const Location &locFrom, Location &locClosestFood);
+	bool getAMovingDirectionTo(const Location &locFrom, const Location &locTo, int& aDirection);
 	bool isTargetPositionFreeToGo(const Location& locTo);
 	bool isAntOnPosition(const Location& locTo);
 

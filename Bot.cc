@@ -35,10 +35,23 @@ void Bot::makeMoves()
     for(size_t ant = 0; ant < state.myAnts.size(); ++ant)
     {
 		const Location locAnt = state.myAnts[ant];
-		Location locClosestFood = state.getClosestFood(locAnt);
-		
-		int dirFood = state.getAMovingDirectionTo(locAnt, locClosestFood); // TDIRECTIONS
-        state.makeMove(locAnt, dirFood);
+		bool bMovedAnt = false;
+
+		Location locClosestFood;
+		bool bFoundCloseFood = state.getClosestFood(locAnt, locClosestFood);
+		if(bFoundCloseFood)
+		{
+			int dirFood = 0;
+			if(state.getAMovingDirectionTo(locAnt, locClosestFood, dirFood)) //TODO: if there is no good direction towards food, send ant exploring?
+			{
+				state.makeMove(locAnt, dirFood);
+				bMovedAnt = true;
+			}
+		}
+		else
+		{
+
+		}
     }
 
     state.bug << "time taken: " << state.timer.getTime() << "ms" << endl << endl;

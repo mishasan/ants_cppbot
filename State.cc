@@ -72,9 +72,9 @@ Location State::getLocation(const Location &loc, int direction)
 
 //TODO: return some type of TDIRECTIONS Type;
 //
-int State::getAMovingDirectionTo(const Location &locFrom, const Location &locTo)
+bool State::getAMovingDirectionTo(const Location &locFrom, const Location &locTo, int& aDirection)
 {
-	int dirBestDirection = 0;
+	bool bFoundADirection = false;
 	double dMinDist = numeric_limits<double>::max();
 	for(int dir = 0; dir < TDIRECTIONS; ++dir)
 	{
@@ -88,10 +88,11 @@ int State::getAMovingDirectionTo(const Location &locFrom, const Location &locTo)
 		if(dDist < dMinDist)
 		{
 			dMinDist = dDist;
-			dirBestDirection = dir;
+			aDirection = dir;
+			bFoundADirection = true;
 		}
 	}
-	return dirBestDirection;
+	return bFoundADirection;
 }
 
 bool State::isTargetPositionFreeToGo(const Location& locTo)
@@ -111,17 +112,20 @@ bool State::isAntOnPosition(const Location& loc)
 	return sqTo.ant >= 0;
 }
 
-Location State::getClosestFood(const Location &locFrom)
+bool State::getClosestFood(const Location &locFrom, Location &locClosestFood)
 {
+	//	if there is non, they have to go explore
 	if (food.empty())
 	{
 		bug << "no food found from pos" << locFrom << endl;
-		return locFrom;
+		locClosestFood = locFrom;
+		return false;
 	}
 
 	double dMinDist = std::numeric_limits<double>::max();
 	std::vector<Location>::iterator itClosestFood = food.begin();
 
+	//	find food with shortest distance to Location
 	for(std::vector<Location>::iterator it = food.begin(); it != food.end(); ++it)
 	{
 		double dDist = distance(locFrom, *it);
@@ -135,15 +139,24 @@ Location State::getClosestFood(const Location &locFrom)
 		// find food with min distance
 		if(dDist < dMinDist)
 		{
-			itClosestFood = it;
+			locClosestFood = *it;
 			dMinDist = dDist;
 		}
 	}
 
-	bug << "closest food found at pos" << *itClosestFood << endl;
-
-	return *itClosestFood;
+	//	dont go to the food, if its too far away
+	if(dMinDist > (viewradius * 2))
+	{
+		bug << "closest food found at pos" << locClosestFood << endl;
+		return false;
+	}
+	else
+	{
+		bug << "closest food found at pos, its too far away" << locClosestFood << endl;
+		return true;
+	}
 }
+
 
 /*
     This function will update update the lastSeen value for any squares currently
