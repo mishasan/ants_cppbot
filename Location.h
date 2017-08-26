@@ -7,7 +7,7 @@
     constants
 */
 const int TDIRECTIONS = 4;
-const char CDIRECTIONS[4] = {'N', 'E', 'S', 'W'};
+enum eDirection {N, E, S, W};
 const int DIRECTIONS[4][2] = { {-1, 0}, {0, 1}, {1, 0}, {0, -1} };      //{N, E, S, W}
 
 
@@ -31,5 +31,6 @@ struct Location
 };
 
 std::ostream& operator<<(std::ostream &os, const Location& loc);
+std::ostream& operator<<(std::ostream &os, const eDirection& e);
 
 #endif //LOCATION_H_

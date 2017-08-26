@@ -48,7 +48,7 @@ void Bot::makeMoves()
 		bool bFoundCloseFood = state.getClosestFood(locAnt, locClosestFood);
 		if(bFoundCloseFood)
 		{
-			int dirFood = 0;
+			eDirection dirFood = N;
 			if(state.getAMovingDirectionTo(locAnt, locClosestFood, dirFood)) //TODO: if there is no good direction towards food, send ant exploring?
 			{
 				state.makeMove(locAnt, dirFood);
