@@ -70,6 +70,13 @@ Location State::getLocation(const Location &loc, int direction)
                      (loc.col + DIRECTIONS[direction][1] + cols) % cols );
 };
 
+//	return the new location relative to the location, edges wrapped
+Location State::getLocationRelative(const Location &loc, int diffRow, int diffCol)
+{
+	return Location( (loc.row + diffRow + rows) % rows,
+					 (loc.col + diffCol + cols) % cols );
+};
+
 //TODO: return some type of TDIRECTIONS Type;
 //
 bool State::getAMovingDirectionTo(const Location &locFrom, const Location &locTo, int& aDirection)
@@ -158,6 +165,89 @@ bool State::getClosestFood(const Location &locFrom, Location &locClosestFood)
 }
 
 
+
+
+//	calculating a score for each Square in the map representing closeness to water [0...1] 0 very close, 1 far away
+void State::updatePathScore()
+{
+	//	TODO: use spread alg to just cover areas which are visible to update that map
+	
+	for(int col = 0; col < cols; ++col)
+	{
+		for(int row = 0; row < rows; ++row)
+		{
+			Location loc(row, col);
+			calcPathScore(loc);
+		}
+	}
+}
+
+//	calcs score for a square being close to water
+void State::calcPathScore(Location& loc)
+{
+	Square& sq = grid[loc.row][loc.col];
+	if(sq.pathScoreComplete)
+	{
+		return;
+	}
+
+	//	if square wasn't visible at least once, can't tell
+	if(sq.isFogged())
+	{
+		sq.pathScore = PATHSCORE_UNKNOWN;
+		sq.pathScoreComplete = false;
+		return;
+	}
+
+	//	cant move on water, give lowest score right away
+	if(sq.isWater)
+	{
+		sq.pathScore = 0.0f;
+		sq.pathScoreComplete = true;
+		return;
+	}
+
+	//	size for 2D neighborhood of one square
+	const int neighbsize = 3; // TODO: make global and able to adapt to maze, viewradius etc
+
+	int iUnfoggedSquaresTotal = 0;
+	int iWaterSquaresTotal = 0;
+	int iLandSquaresTotal = 0;
+	
+	for(int col = -neighbsize; col < neighbsize; ++col)
+	{
+		for(int row = -neighbsize; row < neighbsize; ++row)
+		{
+			const Location locRelative = getLocationRelative(loc, col, row);
+			Square& sqRel = grid[locRelative.row][locRelative.col];
+			if(sqRel.isFogged())
+			{
+				continue;
+			}
+
+			//	count water and land squares in neighborhood
+			if(sqRel.isWater)
+			{
+				iWaterSquaresTotal++;
+			}
+			else if(sqRel.isLand)
+			{
+				iLandSquaresTotal++;
+			}
+			iUnfoggedSquaresTotal++;
+		}
+	}
+
+	//	Score #Land to #Water - a lot of Water around makes a low Score, a lot of Land a high Score
+	//	a lot of fogged squares makes a high score as well, so interesting to explore
+	const int nghSize = (2 * neighbsize + 1) * (2 * neighbsize + 1);
+	sq.pathScore = 1.0f - ((float)iWaterSquaresTotal / (float) nghSize);
+	
+	//	Do I need to check this square again because of not visible neighboring squares?
+	bool bAllNeighborSquaresVisible = iUnfoggedSquaresTotal == nghSize;
+	sq.pathScoreComplete = bAllNeighborSquaresVisible;
+}
+
 /*
     This function will update update the lastSeen value for any squares currently
     visible by one of your live ants.
@@ -187,10 +277,11 @@ void State::updateVisionInformation()
             for(int d=0; d<TDIRECTIONS; d++)
             {
                 const Location nLoc = getLocation(curLoc, d);
-
                 if(!visited[nLoc.row][nLoc.col] && distance(antLoc, nLoc) <= viewradius)
                 {
-                    grid[nLoc.row][nLoc.col].isVisible = 1;
+					Square& nSq = grid[nLoc.row][nLoc.col];
+                    nSq.isVisible = 1;
+					nSq.isLand = !nSq.isWater;	//all visible squares, that aren't water are land and unfogged
                     locQueue.push(nLoc);
                 }
                 visited[nLoc.row][nLoc.col] = 1;
@@ -207,28 +298,56 @@ void State::updateVisionInformation()
 */
 ostream& operator<<(ostream &os, const State &state)
 {
-    for(int row=0; row<state.rows; row++)
-    {
-        for(int col=0; col<state.cols; col++)
-        {
-            if(state.grid[row][col].isWater)
-                os << '%';
-            else if(state.grid[row][col].isFood)
-                os << '*';
-            else if(state.grid[row][col].isHill)
-                os << (char)('A' + state.grid[row][col].hillPlayer);
-            else if(state.grid[row][col].ant >= 0)
-                os << (char)('a' + state.grid[row][col].ant);
-            else if(state.grid[row][col].isVisible)
-                os << '.';
-            else
-                os << '?';
-        }
-        os << endl;
-    }
-
+	printKnownMap(os, state);
+	printScoreMap(os, state);
     return os;
 };
+
+void printKnownMap(ostream& os, const State& state)
+{
+	for(int row=0; row<state.rows; row++)
+	{
+		for(int col=0; col<state.cols; col++)
+		{
+			if(state.grid[row][col].isWater)
+				os << '%';
+			else if(state.grid[row][col].isFood)
+				os << '*';
+			else if(state.grid[row][col].isHill)
+				os << (char)('A' + state.grid[row][col].hillPlayer);
+			else if(state.grid[row][col].ant >= 0)
+				os << (char)('a' + state.grid[row][col].ant);
+			else if(state.grid[row][col].isVisible)
+				os << '.';
+			else
+				os << '?';
+		}
+		os << endl;
+	}
+	os << endl;
+}
+
+void printScoreMap(ostream& os, const State& state)
+{
+	for(int row=0; row<state.rows; row++)
+	{
+		for(int col=0; col<state.cols; col++)
+		{
+			const float& fScore = state.grid[row][col].pathScore;
+			if(fScore < 0.0f)
+			{
+				os << '?';
+			}
+			else
+			{
+				int score1to9 = std::min((int)(fScore * 10.0), 9);
+				os << score1to9;
+			}
+		}
+		os << endl;
+	}
+	os << endl;
+}
 
 //input function
 istream& operator>>(istream &is, State &state)
@@ -351,7 +470,7 @@ void readCurrentTurnToState(istream &is, State &state)
             is >> row >> col >> player;
             state.grid[row][col].deadAnts.push_back(player);
         }
-        else if(inputType == "h")
+        else if(inputType == "h")	//hill square
         {
             is >> row >> col >> player;
             state.grid[row][col].isHill = 1;
@@ -363,11 +482,11 @@ void readCurrentTurnToState(istream &is, State &state)
 
         }
         else if(inputType == "players") //player information
-            is >> state.noPlayers;
+            is >> state.playerCount;
         else if(inputType == "scores") //score information
         {
-            state.scores = vector<double>(state.noPlayers, 0.0);
-            for(int p=0; p<state.noPlayers; p++)
+            state.scores = vector<double>(state.playerCount, 0.0);
+            for(int p=0; p<state.playerCount; p++)
                 is >> state.scores[p];
         }
         else if(inputType == "go") //end of turn input

@@ -19,7 +19,14 @@ void Bot::playGame()
     //continues making moves while the game is not over
     while(cin >> state)
     {
+#ifdef _DEBUG
+		DeBug deBug;
+		deBug.wait();
+#endif // _DEBUG
+		
         state.updateVisionInformation();
+		state.updatePathScore();
+
         makeMoves();
         endTurn();
     }
