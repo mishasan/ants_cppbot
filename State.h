@@ -49,13 +49,13 @@ struct State
     void reset();
 	void resetCellsToLand();
 
-    void makeMove(const Location &loc, eDirection direction);
+    void makeMove(const Location &loc, AntDirection direction);
 
     double distance(const Location &loc1, const Location &loc2);
-    Location getLocation(const Location &startLoc, eDirection direction);
+    Location getLocation(const Location &startLoc, AntDirection direction);
 	Location getLocationRelative(const Location &loc, int diffRow, int diffCol);
 	bool getClosestFood(const Location &locFrom, Location &locClosestFood);
-	bool getAMovingDirectionTo(const Location &locFrom, const Location &locTo, eDirection& aDirection);
+	bool getAMovingDirectionTo(const Location &locFrom, const Location &locTo, AntDirection& aDirection);
 	bool isTargetPositionFreeToGo(const Location& locTo);
 	bool isAntOnPosition(const Location& locTo);
 

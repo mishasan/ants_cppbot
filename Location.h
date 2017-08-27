@@ -2,14 +2,13 @@
 #define LOCATION_H_
 
 #include <iostream>
+#include <vector>
 
 /*
     constants
 */
-const int TDIRECTIONS = 4;
-enum eDirection {N, E, S, W};
+enum class AntDirection {N, E, S, W};
 const int DIRECTIONS[4][2] = { {-1, 0}, {0, 1}, {1, 0}, {0, -1} };      //{N, E, S, W}
-
 
 /*
     struct for representing locations in the grid.
@@ -28,9 +27,10 @@ struct Location
         row = r;
         col = c;
     };
+	static const std::vector<AntDirection> getAllDirections();
 };
 
 std::ostream& operator<<(std::ostream &os, const Location& loc);
-std::ostream& operator<<(std::ostream &os, const eDirection& e);
+std::ostream& operator<<(std::ostream &os, const AntDirection& e);
 
 #endif //LOCATION_H_

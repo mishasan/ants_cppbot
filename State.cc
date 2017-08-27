@@ -43,7 +43,7 @@ void State::resetCellsToLand()
 }
 
 //outputs move information to the engine
-void State::makeMove(const Location &oldLoc, eDirection moveDirection)
+void State::makeMove(const Location &oldLoc, AntDirection moveDirection)
 {
     cout << "o " << oldLoc.row << " " << oldLoc.col << " " << moveDirection << endl;
 	bug << "o " << oldLoc.row << " " << oldLoc.col << " " << moveDirection << endl;
@@ -64,10 +64,10 @@ double State::distance(const Location &loc1, const Location &loc2)
 };
 
 //returns the new location from moving in a given direction with the edges wrapped
-Location State::getLocation(const Location &loc, eDirection direction)
+Location State::getLocation(const Location &loc, AntDirection direction)
 {
-    return Location( (loc.row + DIRECTIONS[direction][0] + rows) % rows,
-                     (loc.col + DIRECTIONS[direction][1] + cols) % cols );
+    return Location( (loc.row + DIRECTIONS[(int)direction][0] + rows) % rows,
+                     (loc.col + DIRECTIONS[(int)direction][1] + cols) % cols );
 };
 
 //	return the new location relative to the location, edges wrapped
@@ -77,15 +77,14 @@ Location State::getLocationRelative(const Location &loc, int diffRow, int diffCo
 					 (loc.col + diffCol + cols) % cols );
 };
 
-//TODO: return some type of TDIRECTIONS Type;
-//
-bool State::getAMovingDirectionTo(const Location &locFrom, const Location &locTo, eDirection& aDirection)
+bool State::getAMovingDirectionTo(const Location &locFrom, const Location &locTo, AntDirection& aDirection)
 {
 	bool bFoundADirection = false;
 	double dMinDist = numeric_limits<double>::max();
-	for(int dir = N; dir <= W; ++dir) //TODO: iterating on enums is bad and ugly and ...
+	const vector<AntDirection> vDirections = Location::getAllDirections();
+	for(auto dir : vDirections)
 	{
-		const Location locTestDirection = getLocation(locFrom, (eDirection)dir);
+		const Location locTestDirection = getLocation(locFrom, dir);
 		if(!isTargetPositionFreeToGo(locTestDirection))
 		{
 			continue;
@@ -95,7 +94,7 @@ bool State::getAMovingDirectionTo(const Location &locFrom, const Location &locTo
 		if(dDist < dMinDist)
 		{
 			dMinDist = dDist;
-			aDirection = (eDirection) dir;
+			aDirection = dir;
 			bFoundADirection = true;
 		}
 	}
@@ -256,9 +255,10 @@ void State::calcPathScore(Location& loc)
 */
 void State::updateVisionInformation()
 {
-    for(int a=0; a<(int) myAnts.size(); a++)
+	const vector<AntDirection> vDirections = Location::getAllDirections();
+
+    for(auto antLoc : myAnts)
     {
-        const Location antLoc = myAnts[a];
         std::queue<Location> locQueue;
 		locQueue.push(antLoc);
 
@@ -270,10 +270,10 @@ void State::updateVisionInformation()
         {
             const Location curLoc = locQueue.front();
             locQueue.pop();
-
-            for(int d = N; d <= W; d++)  //TODO: iterating on enums is bad and ugly and ...
-            {
-                const Location nLoc = getLocation(curLoc, (eDirection) d);
+						
+			for(auto dir : vDirections)
+			{
+                const Location nLoc = getLocation(curLoc, dir);
                 if(!visited[nLoc.row][nLoc.col] && distance(antLoc, nLoc) <= viewradius)
                 {
 					Square& nSq = grid[nLoc.row][nLoc.col];
