@@ -1,6 +1,10 @@
 #include "State.h"
 
 using namespace std;
+#include <random>
+#ifndef _DEBUG
+#include <chrono>
+#endif
 
 //constructor
 State::State()
@@ -101,10 +105,33 @@ bool State::getAMovingDirectionTo(const Location &locFrom, const Location &locTo
 	return bFoundADirection;
 }
 
+//	returns true and a random direction with a valid target location, or false
+bool State::getARandomDirectionFrom(const Location& locFrom, AntDirection& dirRandom)
+{
+	vector<AntDirection> vAllDirections = Location::getAllDirections();
+#ifdef _DEBUG
+	unsigned int ranseed = (unsigned int)seed; 
+#else
+	unsigned int ranseed = std::chrono::system_clock::now().time_since_epoch().count();
+#endif // _DEBUG
+	std::shuffle(vAllDirections.begin(), vAllDirections.end(), std::default_random_engine(ranseed));
+	for(auto dir : vAllDirections)
+	{
+		Location locTo = getLocation(locFrom, dir);
+		if(isTargetPositionFreeToGo(locTo))
+		{
+			dirRandom = dir;
+			return true;
+		}
+	}
+
+	return false;
+}
+
 bool State::isTargetPositionFreeToGo(const Location& locTo)
 {
 	const Square& sqTo = grid[locTo.row][locTo.col];
-	if(sqTo.isWater || isAntOnPosition(locTo))
+	if(sqTo.isWater || isAntOnPosition(locTo) || sqTo.isHill)
 	{
 		return false;
 	}

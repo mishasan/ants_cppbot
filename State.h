@@ -56,6 +56,7 @@ struct State
 	Location getLocationRelative(const Location &loc, int diffRow, int diffCol);
 	bool getClosestFood(const Location &locFrom, Location &locClosestFood);
 	bool getAMovingDirectionTo(const Location &locFrom, const Location &locTo, AntDirection& aDirection);
+	bool getARandomDirectionFrom(const Location& locFrom, AntDirection& dirRandom);
 	bool isTargetPositionFreeToGo(const Location& locTo);
 	bool isAntOnPosition(const Location& locTo);
 

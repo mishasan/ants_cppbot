@@ -49,7 +49,7 @@ void Bot::makeMoves()
 		if(bFoundCloseFood)
 		{
 			AntDirection dirFood = AntDirection::N;
-			if(state.getAMovingDirectionTo(locAnt, locClosestFood, dirFood)) //TODO: if there is no good direction towards food, send ant exploring?
+			if(state.getAMovingDirectionTo(locAnt, locClosestFood, dirFood))
 			{
 				state.makeMove(locAnt, dirFood);
 				bMovedAnt = true;
@@ -57,7 +57,13 @@ void Bot::makeMoves()
 		}
 		else
 		{
-
+			 //TODO: if there is no good direction towards food, send ant exploring?
+			AntDirection dirRandom = AntDirection::N;
+			if(state.getARandomDirectionFrom(locAnt, dirRandom))
+			{
+				state.makeMove(locAnt, dirRandom);
+				bMovedAnt = true;
+			}
 		}
     }
 
