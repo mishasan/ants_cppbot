@@ -9,8 +9,13 @@ std::ostream& operator<<(std::ostream &os, const Location& loc)
 
 std::ostream& operator<<(std::ostream &os, const AntDirection& e)
 {
-	static const char cDirections[4] = {'N', 'E', 'S', 'W'};
-	os << cDirections[(int)e];
+	unsigned int iE = static_cast<unsigned int>(e);
+	static const unsigned int iDirCount = 4;
+	if(iE < iDirCount)
+	{
+		static const char cDirections[iDirCount] = {'N', 'E', 'S', 'W'};
+		os << cDirections[(size_t)e];
+	}
 	return os;
 }
 
