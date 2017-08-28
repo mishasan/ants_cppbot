@@ -75,12 +75,14 @@
     <ClCompile Include="Bot.cc" />
     <ClCompile Include="Location.cc" />
     <ClCompile Include="MyBot.cc" />
+    <ClCompile Include="Orders.cpp" />
     <ClCompile Include="State.cc" />
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="Bot.h" />
     <ClInclude Include="Bug.h" />
     <ClInclude Include="Location.h" />
+    <ClInclude Include="Orders.h" />
     <ClInclude Include="Square.h" />
     <ClInclude Include="State.h" />
     <ClInclude Include="Timer.h" />

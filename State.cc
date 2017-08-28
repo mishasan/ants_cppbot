@@ -46,15 +46,18 @@ void State::resetCellsToLand()
                 grid[row][col].reset();
 }
 
+void State::makeMoveLocal(const Location &oldLoc, AntDirection dirMoveTo)
+{
+	Location newLoc = getLocation(oldLoc, dirMoveTo);
+	grid[newLoc.row][newLoc.col].ant = grid[oldLoc.row][oldLoc.col].ant;
+	grid[oldLoc.row][oldLoc.col].ant = -1;
+}
+
 //outputs move information to the engine
 void State::makeMove(const Location &oldLoc, AntDirection moveDirection)
 {
     cout << "o " << oldLoc.row << " " << oldLoc.col << " " << moveDirection << endl;
-	bug << "o " << oldLoc.row << " " << oldLoc.col << " " << moveDirection << endl;
-
-    Location newLoc = getLocation(oldLoc, moveDirection);
-    grid[newLoc.row][newLoc.col].ant = grid[oldLoc.row][oldLoc.col].ant;
-    grid[oldLoc.row][oldLoc.col].ant = -1;
+	bug << "o " << oldLoc.row << " " << oldLoc.col << " " << moveDirection << endl;    
 };
 
 //returns the euclidean distance between two locations with the edges wrapped

@@ -1,21 +1,21 @@
-#ifndef BOT_H_
-#define BOT_H_
+#pragma once
 
 #include "State.h"
+#include "Orders.h"
 
-/*
-    This struct represents your bot in the game of Ants
-*/
-struct Bot
+//	MyBot 
+class Bot
 {
-    State state;
+public:
+	Bot();
 
-    Bot();
+	void playGame();    //plays a single game of Ants
 
-    void playGame();    //plays a single game of Ants
-
-    void makeMoves();   //makes moves for a single turn
-    void endTurn();     //indicates to the engine that it has made its moves
+	void issueMoves();	// which ants is doing what, collect orders
+	void makeMoves();   // makes moves for a single turn
+	
+	void endTurn();     //indicates to the engine that it has made its moves
+	
+	State state;
+	Orders m_orders;
 };
-
-#endif //BOT_H_

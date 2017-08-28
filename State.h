@@ -50,7 +50,7 @@ struct State
 	void resetCellsToLand();
 
     void makeMove(const Location &loc, AntDirection direction);
-
+	void makeMoveLocal(const Location &loc, AntDirection direction);
     double distance(const Location &loc1, const Location &loc2);
     Location getLocation(const Location &startLoc, AntDirection direction);
 	Location getLocationRelative(const Location &loc, int diffRow, int diffCol);

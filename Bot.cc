@@ -23,24 +23,25 @@ void Bot::playGame()
 		DeBug deBug;
 		deBug.wait();
 #endif // _DEBUG
-		
+	
         state.updateVisionInformation();
 		state.updatePathScore();
 
+		issueMoves();
         makeMoves();
         endTurn();
     }
 };
 
-//makes the bots moves for the turn
-void Bot::makeMoves()
+//	figure out what each ant is going to do, create orders and store them
+//	moves ants on local grid, it will be sent to the engine later
+void Bot::issueMoves()
 {
-    state.bug << "turn " << state.turn << ":" << endl;
-    state.bug << state << endl;
+	m_orders.setCount(state.myAnts.size());
 
-    //picks out moves for each ant
-    for(size_t ant = 0; ant < state.myAnts.size(); ++ant)
-    {
+	//picks out moves for each ant
+	for(size_t ant = 0; ant < state.myAnts.size(); ++ant)
+	{
 		const Location locAnt = state.myAnts[ant];
 		bool bMovedAnt = false;
 
@@ -51,21 +52,53 @@ void Bot::makeMoves()
 			AntDirection dirFood = AntDirection::N;
 			if(state.getAMovingDirectionTo(locAnt, locClosestFood, dirFood))
 			{
-				state.makeMove(locAnt, dirFood);
+				Order order;
+				order.setOrderType(Order::OrderType::Food);
+				order.setMove(dirFood);
+				m_orders.setOrder(ant, order);
+				state.makeMoveLocal(locAnt, dirFood);
 				bMovedAnt = true;
 			}
 		}
 		else
 		{
-			 //TODO: if there is no good direction towards food, send ant exploring?
+			//TODO: if there is no good direction towards food, send ant exploring?
 			AntDirection dirRandom = AntDirection::N;
 			if(state.getARandomDirectionFrom(locAnt, dirRandom))
 			{
-				state.makeMove(locAnt, dirRandom);
+				Order order;
+				order.setOrderType(Order::OrderType::Food);
+				order.setMove(dirRandom);
+				m_orders.setOrder(ant, order);
+				state.makeMoveLocal(locAnt, dirRandom);
 				bMovedAnt = true;
 			}
 		}
-    }
+
+		if(!bMovedAnt)
+		{
+			Order orderIdle;
+			orderIdle.setOrderType(Order::OrderType::Idle);
+			m_orders.setOrder(ant, orderIdle);
+		}
+	}
+}
+
+//makes the bots moves for the turn
+void Bot::makeMoves()
+{
+    state.bug << "turn " << state.turn << ":" << endl;
+    state.bug << state << endl;
+
+	for(size_t ant = 0; ant < state.myAnts.size(); ++ant)
+	{
+		const Order& order = m_orders.getOrder(ant);
+		if(order.GetOrderType() != Order::OrderType::Idle)
+		{
+			const Location locAnt = state.myAnts[ant];
+			state.makeMove(locAnt, order.getMove());
+		}
+	}
 
     state.bug << "time taken: " << state.timer.getTime() << "ms" << endl << endl;
 };
