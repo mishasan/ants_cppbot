@@ -6,8 +6,6 @@
 #include <cmath>
 #include <string>
 #include <vector>
-#include <queue>
-#include <stack>
 
 #include "Timer.h"
 #include "Bug.h"
@@ -34,7 +32,8 @@ struct State
     long long seed;
 
     std::vector<std::vector<Square> > grid;
-    std::vector<Location> myAnts, enemyAnts, myHills, enemyHills, food;
+    std::vector<Location> enemyAnts, myHills, enemyHills, food;
+	std::vector<Location> myAnts;
 
     Timer timer;
     Bug bug;

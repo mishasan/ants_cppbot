@@ -2,6 +2,8 @@
 
 using namespace std;
 #include <random>
+#include <queue>
+
 #ifndef _DEBUG
 #include <chrono>
 #endif
@@ -487,10 +489,11 @@ void readCurrentTurnToState(istream &is, State &state)
         {
             is >> row >> col >> player;
             state.grid[row][col].ant = player;
+			Location antLoc(row, col);
             if(player == 0)
-                state.myAnts.push_back(Location(row, col));
+                state.myAnts.push_back(antLoc);
             else
-                state.enemyAnts.push_back(Location(row, col));
+                state.enemyAnts.push_back(antLoc);
         }
         else if(inputType == "d") //dead ant square
         {
