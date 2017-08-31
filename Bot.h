@@ -17,5 +17,4 @@ public:
 	void endTurn();     //indicates to the engine that it has made its moves
 	
 	State state;
-	Orders m_orders;
 };

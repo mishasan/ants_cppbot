@@ -3,6 +3,7 @@
 using namespace std;
 #include <random>
 #include <queue>
+#include "Ant.h"
 
 #ifndef _DEBUG
 #include <chrono>
@@ -48,18 +49,24 @@ void State::resetCellsToLand()
                 grid[row][col].reset();
 }
 
-void State::makeMoveLocal(const Location &oldLoc, AntDirection dirMoveTo)
+void State::makeMoveLocal(Ant& ant)
 {
-	Location newLoc = getLocation(oldLoc, dirMoveTo);
+	const Location& oldLoc = ant.getLocation();
+	Location newLoc = getLocation(oldLoc, ant.getOrder().getMove());
 	grid[newLoc.row][newLoc.col].ant = grid[oldLoc.row][oldLoc.col].ant;
 	grid[oldLoc.row][oldLoc.col].ant = -1;
 }
 
 //outputs move information to the engine
-void State::makeMove(const Location &oldLoc, AntDirection moveDirection)
+void State::makeMove(Ant& ant)
 {
+	const Location& oldLoc = ant.getLocation();
+	const AntDirection moveDirection = ant.getOrder().getMove();
     cout << "o " << oldLoc.row << " " << oldLoc.col << " " << moveDirection << endl;
-	bug << "o " << oldLoc.row << " " << oldLoc.col << " " << moveDirection << endl;    
+	bug << "o " << oldLoc.row << " " << oldLoc.col << " " << moveDirection << endl;
+
+	Location newLoc = getLocation(oldLoc, moveDirection);
+	ant.setLocation(newLoc);
 };
 
 //returns the euclidean distance between two locations with the edges wrapped
@@ -289,8 +296,9 @@ void State::updateVisionInformation()
 {
 	const vector<AntDirection> vDirections = Location::getAllDirections();
 
-    for(auto antLoc : myAnts)
+    for(const auto& ant : myAnts)
     {
+		const Location& antLoc = ant.getLocation();
         std::queue<Location> locQueue;
 		locQueue.push(antLoc);
 
@@ -491,7 +499,7 @@ void readCurrentTurnToState(istream &is, State &state)
             state.grid[row][col].ant = player;
 			Location antLoc(row, col);
             if(player == 0)
-                state.myAnts.push_back(antLoc);
+                state.myAnts.push_back(Ant(antLoc));
             else
                 state.enemyAnts.push_back(antLoc);
         }

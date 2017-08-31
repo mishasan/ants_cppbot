@@ -1,4 +1,5 @@
 #include "Bot.h"
+#include "Ant.h"
 
 using namespace std;
 
@@ -37,12 +38,11 @@ void Bot::playGame()
 //	moves ants on local grid, it will be sent to the engine later
 void Bot::issueMoves()
 {
-	m_orders.setCount(state.myAnts.size());
-
 	//picks out moves for each ant
-	for(size_t ant = 0; ant < state.myAnts.size(); ++ant)
+	for(auto& ant : state.myAnts)
 	{
-		const Location locAnt = state.myAnts[ant];
+		const Location& locAnt = ant.getLocation();
+
 		bool bMovedAnt = false;
 
 		Location locClosestFood;
@@ -55,8 +55,8 @@ void Bot::issueMoves()
 				Order order;
 				order.setOrderType(Order::OrderType::Food);
 				order.setMove(dirFood);
-				m_orders.setOrder(ant, order);
-				state.makeMoveLocal(locAnt, dirFood);
+				ant.setOrder(order);
+				state.makeMoveLocal(ant);
 				bMovedAnt = true;
 			}
 		}
@@ -69,8 +69,8 @@ void Bot::issueMoves()
 				Order order;
 				order.setOrderType(Order::OrderType::Food);
 				order.setMove(dirRandom);
-				m_orders.setOrder(ant, order);
-				state.makeMoveLocal(locAnt, dirRandom);
+				ant.setOrder(order);
+				state.makeMoveLocal(ant);
 				bMovedAnt = true;
 			}
 		}
@@ -79,7 +79,7 @@ void Bot::issueMoves()
 		{
 			Order orderIdle;
 			orderIdle.setOrderType(Order::OrderType::Idle);
-			m_orders.setOrder(ant, orderIdle);
+			ant.setOrder(orderIdle);
 		}
 	}
 }
@@ -90,13 +90,11 @@ void Bot::makeMoves()
     state.bug << "turn " << state.turn << ":" << endl;
     state.bug << state << endl;
 
-	for(size_t ant = 0; ant < state.myAnts.size(); ++ant)
+	for(auto& ant : state.myAnts)
 	{
-		const Order& order = m_orders.getOrder(ant);
-		if(order.GetOrderType() != Order::OrderType::Idle)
+		if(ant.getOrder().GetOrderType() != Order::OrderType::Idle)
 		{
-			const Location locAnt = state.myAnts[ant];
-			state.makeMove(locAnt, order.getMove());
+			state.makeMove(ant);
 		}
 	}
 
