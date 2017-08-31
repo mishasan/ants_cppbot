@@ -22,8 +22,7 @@ struct State
     /*
         Variables
     */
-    int rows, cols,
-        turn, turns,
+    int turn, turns,
         playerCount;
     double attackradius, spawnradius, viewradius;
     double loadtime, turntime;
@@ -51,10 +50,7 @@ struct State
 
     void makeMove(Ant& ant);
 	void makeMoveLocal(Ant& ant);
-    double distance(const Location &loc1, const Location &loc2);
-    Location getLocation(const Location &startLoc, AntDirection direction);
-	Location getLocationRelative(const Location &loc, int diffRow, int diffCol);
-	bool getClosestFood(const Location &locFrom, Location &locClosestFood);
+ 	bool getClosestFood(const Location &locFrom, Location &locClosestFood);
 	bool getAMovingDirectionTo(const Location &locFrom, const Location &locTo, AntDirection& aDirection);
 	bool getARandomDirectionFrom(const Location& locFrom, AntDirection& dirRandom);
 	bool isTargetPositionFreeToGo(const Location& locTo);

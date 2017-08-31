@@ -28,6 +28,9 @@ struct Location
         col = c;
     };
 	static const std::vector<AntDirection> getAllDirections();
+	static double distance(const Location &loc1, const Location &loc2);
+	static Location getLocation(const Location &loc, AntDirection direction);
+	static Location getLocationRelative(const Location &loc, int diffRow, int diffCol);
 };
 
 std::ostream& operator<<(std::ostream &os, const Location& loc);

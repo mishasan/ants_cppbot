@@ -4,6 +4,7 @@ using namespace std;
 #include <random>
 #include <queue>
 #include "Ant.h"
+#include "Map.h"
 
 #ifndef _DEBUG
 #include <chrono>
@@ -26,7 +27,7 @@ State::~State()
 //sets the state up
 void State::setup()
 {
-    grid = vector<vector<Square> >(rows, vector<Square>(cols, Square()));
+    grid = vector<vector<Square> >(Map::map().rows(), vector<Square>(Map::map().cols(), Square()));
 };
 
 // clears the bots ant vector and resets cells
@@ -43,8 +44,8 @@ void State::reset()
 //resets all non-water squares to land
 void State::resetCellsToLand()
 {
-	for(int row=0; row < rows; row++)
-        for(int col=0; col<cols; col++)
+	for(unsigned int row = 0; row < Map::map().rows(); row++)
+        for(unsigned int col = 0; col < Map::map().cols(); col++)
             if(!grid[row][col].isWater)
                 grid[row][col].reset();
 }
@@ -52,7 +53,7 @@ void State::resetCellsToLand()
 void State::makeMoveLocal(Ant& ant)
 {
 	const Location& oldLoc = ant.getLocation();
-	Location newLoc = getLocation(oldLoc, ant.getOrder().getMove());
+	Location newLoc = Location::getLocation(oldLoc, ant.getOrder().getMove());
 	grid[newLoc.row][newLoc.col].ant = grid[oldLoc.row][oldLoc.col].ant;
 	grid[oldLoc.row][oldLoc.col].ant = -1;
 }
@@ -65,33 +66,10 @@ void State::makeMove(Ant& ant)
     cout << "o " << oldLoc.row << " " << oldLoc.col << " " << moveDirection << endl;
 	bug << "o " << oldLoc.row << " " << oldLoc.col << " " << moveDirection << endl;
 
-	Location newLoc = getLocation(oldLoc, moveDirection);
+	Location newLoc = Location::getLocation(oldLoc, moveDirection);
 	ant.setLocation(newLoc);
 };
 
-//returns the euclidean distance between two locations with the edges wrapped
-double State::distance(const Location &loc1, const Location &loc2)
-{
-    int d1 = abs(loc1.row-loc2.row),
-        d2 = abs(loc1.col-loc2.col),
-        dr = min(d1, rows-d1),
-        dc = min(d2, cols-d2);
-    return sqrt(dr*dr + dc*dc);
-};
-
-//returns the new location from moving in a given direction with the edges wrapped
-Location State::getLocation(const Location &loc, AntDirection direction)
-{
-    return Location( (loc.row + DIRECTIONS[(int)direction][0] + rows) % rows,
-                     (loc.col + DIRECTIONS[(int)direction][1] + cols) % cols );
-};
-
-//	return the new location relative to the location, edges wrapped
-Location State::getLocationRelative(const Location &loc, int diffRow, int diffCol)
-{
-	return Location( (loc.row + diffRow + rows) % rows,
-					 (loc.col + diffCol + cols) % cols );
-};
 
 bool State::getAMovingDirectionTo(const Location &locFrom, const Location &locTo, AntDirection& aDirection)
 {
@@ -100,13 +78,13 @@ bool State::getAMovingDirectionTo(const Location &locFrom, const Location &locTo
 	const vector<AntDirection> vDirections = Location::getAllDirections();
 	for(auto dir : vDirections)
 	{
-		const Location locTestDirection = getLocation(locFrom, dir);
+		const Location locTestDirection = Location::getLocation(locFrom, dir);
 		if(!isTargetPositionFreeToGo(locTestDirection))
 		{
 			continue;
 		}
 
-		const double dDist = distance(locTestDirection, locTo);
+		const double dDist = Location::distance(locTestDirection, locTo);
 		if(dDist < dMinDist)
 		{
 			dMinDist = dDist;
@@ -129,7 +107,7 @@ bool State::getARandomDirectionFrom(const Location& locFrom, AntDirection& dirRa
 	std::shuffle(vAllDirections.begin(), vAllDirections.end(), std::default_random_engine(ranseed));
 	for(auto dir : vAllDirections)
 	{
-		Location locTo = getLocation(locFrom, dir);
+		Location locTo = Location::getLocation(locFrom, dir);
 		if(isTargetPositionFreeToGo(locTo))
 		{
 			dirRandom = dir;
@@ -173,7 +151,7 @@ bool State::getClosestFood(const Location &locFrom, Location &locClosestFood)
 	//	find food with shortest distance to Location
 	for(std::vector<Location>::iterator it = food.begin(); it != food.end(); ++it)
 	{
-		double dDist = distance(locFrom, *it);
+		double dDist = Location::distance(locFrom, *it);
 		
 		//	food on same position as ant or error in distance?
 		if(dDist <= numeric_limits<double>::epsilon())
@@ -207,9 +185,9 @@ void State::updatePathScore()
 {
 	//	TODO: use spread alg to just cover areas which are visible to update that map
 	
-	for(int col = 0; col < cols; ++col)
+	for(unsigned int row = 0; row < Map::map().rows(); ++row)
 	{
-		for(int row = 0; row < rows; ++row)
+		for(unsigned int col = 0; col < Map::map().cols(); ++col)
 		{
 			Location loc(row, col);
 			calcPathScore(loc);
@@ -253,7 +231,7 @@ void State::calcPathScore(Location& loc)
 	{
 		for(int row = -neighbsize; row < neighbsize; ++row)
 		{
-			const Location locRelative = getLocationRelative(loc, col, row);
+			const Location locRelative = Location::getLocationRelative(loc, col, row);
 			Square& sqRel = grid[locRelative.row][locRelative.col];
 			if(sqRel.isFogged())
 			{
@@ -302,7 +280,7 @@ void State::updateVisionInformation()
         std::queue<Location> locQueue;
 		locQueue.push(antLoc);
 
-        std::vector<std::vector<bool> > visited(rows, std::vector<bool>(cols, 0));
+        std::vector<std::vector<bool> > visited(Map::map().rows(), std::vector<bool>(Map::map().cols(), 0));
         grid[antLoc.row][antLoc.col].isVisible = 1;
         visited[antLoc.row][antLoc.col] = 1;
 
@@ -313,8 +291,8 @@ void State::updateVisionInformation()
 						
 			for(auto dir : vDirections)
 			{
-                const Location nLoc = getLocation(curLoc, dir);
-                if(!visited[nLoc.row][nLoc.col] && distance(antLoc, nLoc) <= viewradius)
+                const Location nLoc = Location::getLocation(curLoc, dir);
+                if(!visited[nLoc.row][nLoc.col] && Location::distance(antLoc, nLoc) <= viewradius)
                 {
 					Square& nSq = grid[nLoc.row][nLoc.col];
                     nSq.isVisible = 1;
@@ -342,9 +320,9 @@ ostream& operator<<(ostream &os, const State &state)
 
 void printKnownMap(ostream& os, const State& state)
 {
-	for(int row=0; row<state.rows; row++)
+	for(unsigned int row=0; row < Map::map().rows(); row++)
 	{
-		for(int col=0; col<state.cols; col++)
+		for(unsigned int col=0; col < Map::map().cols(); col++)
 		{
 			if(state.grid[row][col].isWater)
 				os << '%';
@@ -366,9 +344,9 @@ void printKnownMap(ostream& os, const State& state)
 
 void printScoreMap(ostream& os, const State& state)
 {
-	for(int row=0; row<state.rows; row++)
+	for(unsigned int row=0; row < Map::map().rows(); row++)
 	{
-		for(int col=0; col<state.cols; col++)
+		for(unsigned int col=0; col < Map::map().cols(); col++)
 		{
 			const float& fScore = state.grid[row][col].pathScore;
 			if(fScore < 0.0f)
@@ -432,7 +410,7 @@ void readTurnType(istream &is, State &state)
 void readGameParameters(istream &is, State &state)
 {
 	string inputType;
-
+	unsigned int rows = 0, cols = 0;
     while(is >> inputType)
     {
         if(inputType == "loadtime")
@@ -440,9 +418,9 @@ void readGameParameters(istream &is, State &state)
         else if(inputType == "turntime")
             is >> state.turntime;
         else if(inputType == "rows")
-            is >> state.rows;
+            is >> rows;
         else if(inputType == "cols")
-            is >> state.cols;
+            is >> cols;
         else if(inputType == "turns")
             is >> state.turns;
         else if(inputType == "player_seed")
@@ -474,6 +452,8 @@ void readGameParameters(istream &is, State &state)
 			getline(is, junk);
 		}
     }
+
+	Map::map().setDimensions(rows, cols);
 }
 
 void readCurrentTurnToState(istream &is, State &state)
