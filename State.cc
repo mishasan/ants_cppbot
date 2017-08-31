@@ -53,7 +53,7 @@ void State::resetCellsToLand()
 void State::makeMoveLocal(Ant& ant)
 {
 	const Location& oldLoc = ant.getLocation();
-	Location newLoc = Location::getLocation(oldLoc, ant.getOrder().getMove());
+	Location newLoc = ant.getNewLocation();
 	grid[newLoc.row][newLoc.col].ant = grid[oldLoc.row][oldLoc.col].ant;
 	grid[oldLoc.row][oldLoc.col].ant = -1;
 }
@@ -61,13 +61,12 @@ void State::makeMoveLocal(Ant& ant)
 //outputs move information to the engine
 void State::makeMove(Ant& ant)
 {
-	const Location& oldLoc = ant.getLocation();
+	const Location& loc = ant.getLocation();
 	const AntDirection moveDirection = ant.getOrder().getMove();
-    cout << "o " << oldLoc.row << " " << oldLoc.col << " " << moveDirection << endl;
-	bug << "o " << oldLoc.row << " " << oldLoc.col << " " << moveDirection << endl;
+    cout << "o " << loc.row << " " << loc.col << " " << moveDirection << endl;
+	bug << "o " << loc.row << " " << loc.col << " " << moveDirection << endl;
 
-	Location newLoc = Location::getLocation(oldLoc, moveDirection);
-	ant.setLocation(newLoc);
+	ant.moveByOrder();
 };
 
 
