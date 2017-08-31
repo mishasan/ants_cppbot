@@ -94,7 +94,7 @@ void Bot::makeMoves()
 	{
 		if(ant.getOrder().getOrderType() != Order::OrderType::Idle)
 		{
-			state.makeMove(ant);
+			state.sendMoveToEngine(ant);
 		}
 	}
 

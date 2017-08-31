@@ -48,7 +48,7 @@ struct State
     void reset();
 	void resetCellsToLand();
 
-    void makeMove(Ant& ant);
+    void sendMoveToEngine(Ant& ant);
 	void makeMoveLocal(Ant& ant);
  	bool getClosestFood(const Location &locFrom, Location &locClosestFood);
 	bool getAMovingDirectionTo(const Location &locFrom, const Location &locTo, AntDirection& aDirection);

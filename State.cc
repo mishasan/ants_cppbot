@@ -58,8 +58,7 @@ void State::makeMoveLocal(Ant& ant)
 	grid[oldLoc.row][oldLoc.col].ant = -1;
 }
 
-//outputs move information to the engine
-void State::makeMove(Ant& ant)
+void State::sendMoveToEngine(Ant& ant)
 {
 	const Location& loc = ant.getLocation();
 	const AntDirection moveDirection = ant.getOrder().getMove();
