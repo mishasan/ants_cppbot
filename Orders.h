@@ -16,7 +16,7 @@ public:
 	void setOrderType(OrderType ordertype);
 	void setMove(AntDirection antDir);
 	AntDirection getMove() const;
-	OrderType GetOrderType() const;
+	OrderType getOrderType() const;
 
 private:
 	OrderType m_OrderType;

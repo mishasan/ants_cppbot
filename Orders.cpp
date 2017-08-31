@@ -33,7 +33,7 @@ AntDirection Order::getMove() const
 	return m_dirGoTo;
 }
 
-Order::OrderType Order::GetOrderType() const
+Order::OrderType Order::getOrderType() const
 {
 	return m_OrderType;
 }

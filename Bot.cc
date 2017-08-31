@@ -92,7 +92,7 @@ void Bot::makeMoves()
 
 	for(auto& ant : state.myAnts)
 	{
-		if(ant.getOrder().GetOrderType() != Order::OrderType::Idle)
+		if(ant.getOrder().getOrderType() != Order::OrderType::Idle)
 		{
 			state.makeMove(ant);
 		}
