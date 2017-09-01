@@ -27,6 +27,9 @@ struct Location
         row = r;
         col = c;
     };
+
+	bool operator==(const Location& loc) const;
+
 	static const std::vector<AntDirection> getAllDirections();
 	static double distance(const Location &loc1, const Location &loc2);
 	static Location getLocation(const Location &loc, AntDirection direction);

@@ -48,4 +48,9 @@ Location Location::getLocationRelative(const Location &loc, int diffRow, int dif
 {
 	return Location( (loc.row + diffRow + Map::map().rows()) % Map::map().rows(),
 					 (loc.col + diffCol + Map::map().cols()) % Map::map().cols() );
-};
+}
+
+bool Location::operator==(const Location& loc) const
+{
+	return this->row == loc.row && this->col == loc.col;
+}
