@@ -17,13 +17,15 @@ public:
 	Location getNewLocation() const;
 	void moveByOrder();
 
-	void setOrder(const Order& order) {m_order = order;}
-	const Order& getOrder() const {return m_order;}
-	
+	void setOrder(const Order& order);
+	const Order& getOrder() const;
+	void saveLastOrder();
+
 private:
 	Location m_loc;
 	bool m_bValid;
 
 	Order m_order;
+	std::vector<Order> m_lastOrders;
 };
 

@@ -34,3 +34,20 @@ void Ant::moveByOrder()
 {
 	setLocation(getNewLocation());
 }
+
+void Ant::setOrder(const Order& order)
+{
+	m_order = order;
+}
+
+const Order& Ant::getOrder() const
+{
+
+	return m_order;
+}
+
+void Ant::saveLastOrder()
+{
+	m_lastOrders.push_back(m_order);
+	m_order.reset();
+}
