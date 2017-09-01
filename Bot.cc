@@ -24,7 +24,8 @@ void Bot::playGame()
 		DeBug deBug;
 		deBug.wait();
 #endif // _DEBUG
-	
+
+		state.updateAntList();
         state.updateVisionInformation();
 		state.updatePathScore();
 
@@ -105,7 +106,10 @@ void Bot::makeMoves()
 void Bot::endTurn()
 {
     if(state.turn > 0)
-        state.reset();
+    {
+		state.reset();
+		state.markPreviousAnts();
+	}
     state.turn++;
 
     cout << "go" << endl;

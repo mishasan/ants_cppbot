@@ -33,7 +33,7 @@ void State::setup()
 // clears the bots ant vector and resets cells
 void State::reset()
 {
-    myAnts.clear();
+    //myAnts.clear();
     enemyAnts.clear();
     myHills.clear();
     enemyHills.clear();
@@ -303,6 +303,53 @@ void State::updateVisionInformation()
     }
 };
 
+void State::addAnt(unsigned int row, unsigned int col, unsigned int antPlayerNr)
+{
+	grid[row][col].ant = antPlayerNr;
+
+	const unsigned int playerNrMe = 0;
+	Location antLoc(row, col);
+	if(antPlayerNr == playerNrMe)
+	{
+		//	check if Ant is already in list
+		std::vector<Ant>::iterator itFnd = std::find_if(myAnts.begin(), myAnts.end(), [antLoc] (Ant& ant) { return ant.getLocation() == antLoc; } );
+		if(itFnd != myAnts.end())
+		{
+			Ant& ant = *itFnd;
+			ant.saveLastOrder();
+
+			//	mark existing Ant as still available in this turn
+			ant.setValid();
+		}
+		else
+		{
+			myAnts.push_back(Ant(antLoc));
+		}
+		
+		//	at end, remove dead ants
+	}
+	else
+	{
+		enemyAnts.push_back(antLoc);
+	}
+}
+
+void State::markPreviousAnts()
+{
+	for(auto& ant : myAnts)
+	{
+		ant.setValid(false);
+	}
+}
+
+void State::updateAntList()
+{
+	//	just keeps Ants in the list, that got send again by the engine
+	myAnts.erase(std::remove_if(myAnts.begin(), myAnts.end(), [] (Ant& ant) { return !ant.isValid(); }), myAnts.end());
+
+	// TODO: collect invalid ants as dead ants for gathering information about fights or movement errors
+}
+
 /*
     This is the output function for a state. It will add a char map
     representation of the state to the output stream passed to it.
@@ -388,7 +435,7 @@ void readTurnType(istream &is, State &state)
         if(inputType == "end")
         {
             state.gameover = 1;
-            break;	//TODO: warum break und nicht return?
+            break;
         }
         else if(inputType == "turn")
         {
@@ -457,7 +504,7 @@ void readGameParameters(istream &is, State &state)
 void readCurrentTurnToState(istream &is, State &state)
 {
 	string inputType, junk;
-	int row, col, player;
+	unsigned int row, col, player;
 	while(is >> inputType)
     {
         if(inputType == "w") //water square
@@ -474,12 +521,7 @@ void readCurrentTurnToState(istream &is, State &state)
         else if(inputType == "a") //live ant square
         {
             is >> row >> col >> player;
-            state.grid[row][col].ant = player;
-			Location antLoc(row, col);
-            if(player == 0)
-                state.myAnts.push_back(Ant(antLoc));
-            else
-                state.enemyAnts.push_back(antLoc);
+			state.addAnt(row, col, player);
         }
         else if(inputType == "d") //dead ant square
         {

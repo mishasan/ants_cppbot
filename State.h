@@ -59,6 +59,9 @@ struct State
     void updateVisionInformation();
 	void updatePathScore();
 	void calcPathScore(Location& loc);
+	void addAnt(unsigned int row, unsigned int col, unsigned int player);
+	void markPreviousAnts();
+	void updateAntList();
 };
 
 std::ostream& operator<<(std::ostream &os, const State &state);
