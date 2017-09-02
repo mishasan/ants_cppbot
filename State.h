@@ -55,6 +55,7 @@ struct State
 	bool getARandomDirectionFrom(const Location& locFrom, AntDirection& dirRandom);
 	bool isTargetPositionFreeToGo(const Location& locTo);
 	bool isAntOnPosition(const Location& locTo);
+	bool isThisGoingBackwards(const Ant& ant, const AntDirection dir) const;
 
     void updateVisionInformation();
 	void updatePathScore();
@@ -62,6 +63,7 @@ struct State
 	void addAnt(unsigned int row, unsigned int col, unsigned int player);
 	void markPreviousAnts();
 	void updateAntList();
+	bool getAnExploringDirection(Ant& ant, AntDirection& dir);
 };
 
 std::ostream& operator<<(std::ostream &os, const State &state);

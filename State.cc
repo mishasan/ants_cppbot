@@ -3,6 +3,7 @@
 using namespace std;
 #include <random>
 #include <queue>
+#include <map>
 #include "Ant.h"
 #include "Map.h"
 
@@ -72,6 +73,8 @@ void State::sendMoveToEngine(Ant& ant)
 bool State::getAMovingDirectionTo(const Location &locFrom, const Location &locTo, AntDirection& aDirection)
 {
 	bool bFoundADirection = false;
+	
+	//	find the neighboring location thats closest to the target location and is available
 	double dMinDist = numeric_limits<double>::max();
 	const vector<AntDirection> vDirections = Location::getAllDirections();
 	for(auto dir : vDirections)
@@ -116,6 +119,48 @@ bool State::getARandomDirectionFrom(const Location& locFrom, AntDirection& dirRa
 	return false;
 }
 
+bool State::getAnExploringDirection(Ant& ant, AntDirection& dirExploreTo)
+{
+	//	sort possible Directions by Score, low to high
+	vector<AntDirection> vAllDirections = Location::getAllDirections();
+	std::map<float, AntDirection> mapDirByScore;
+	for(auto dir : vAllDirections)
+	{
+		Location loc = Location::getLocation(ant.getLocation(), dir);
+		if(isTargetPositionFreeToGo(loc))
+		{
+			const Square& sq = grid[loc.row][loc.col];
+			mapDirByScore[sq.pathScore] = dir;
+		}
+	}
+
+	//	don't move if there is not neighboring position available
+	if(mapDirByScore.empty())
+	{
+		return false;
+	}
+
+	//	picks out of available directions that one with the best score
+	for(std::map<float, AntDirection>::reverse_iterator itScoreHighToLow = mapDirByScore.rbegin();
+		itScoreHighToLow != mapDirByScore.rend(); ++itScoreHighToLow)
+	{
+		AntDirection dir = itScoreHighToLow->second;
+
+		//	TODO: for now the ant is not allowed to go back where it came from -> could end up in trapped ants
+		if(isThisGoingBackwards(ant, dir))
+		{
+			continue;
+		}
+		else
+		{
+			dirExploreTo = dir;
+			return true;
+		}
+	}
+
+	return false;
+}
+
 bool State::isTargetPositionFreeToGo(const Location& locTo)
 {
 	const Square& sqTo = grid[locTo.row][locTo.col];
@@ -131,6 +176,12 @@ bool State::isAntOnPosition(const Location& loc)
 {
 	const Square& sqTo = grid[loc.row][loc.col];
 	return sqTo.ant >= 0;
+}
+
+bool State::isThisGoingBackwards(const Ant& ant, const AntDirection dir) const
+{
+	AntDirection dirPreviousMove = AntDirection::N;
+	return ant.getPreviousMove(dirPreviousMove) && dir == Location::getCounterDirection(dirPreviousMove);
 }
 
 bool State::getClosestFood(const Location &locFrom, Location &locClosestFood)

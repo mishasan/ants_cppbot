@@ -64,12 +64,13 @@ void Bot::issueMoves()
 		else
 		{
 			//TODO: if there is no good direction towards food, send ant exploring?
-			AntDirection dirRandom = AntDirection::N;
-			if(state.getARandomDirectionFrom(locAnt, dirRandom))
+			AntDirection dir = AntDirection::N;
+			if(state.getAnExploringDirection(ant, dir))
+			//if(state.getARandomDirectionFrom(locAnt, dir))
 			{
 				Order order;
 				order.setOrderType(Order::OrderType::Food);
-				order.setMove(dirRandom);
+				order.setMove(dir);
 				ant.setOrder(order);
 				state.makeMoveLocal(ant);
 				bMovedAnt = true;
