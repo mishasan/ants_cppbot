@@ -51,3 +51,22 @@ void Ant::saveLastOrder()
 	m_lastOrders.push_back(m_order);
 	m_order.reset();
 }
+
+bool Ant::getPreviousMove(AntDirection& dir) const
+{
+	for(std::vector<Order>::const_reverse_iterator it = m_lastOrders.rbegin(); it != m_lastOrders.rend(); ++it)
+	{
+		const Order& previousOrder = *it;
+		if(previousOrder.getOrderType() == Order::OrderType::Idle)
+		{
+			continue;
+		}
+		else
+		{
+			dir = previousOrder.getMove();
+			return true;
+		}
+	}
+
+	return false;
+}

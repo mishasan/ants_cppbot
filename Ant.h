@@ -20,7 +20,7 @@ public:
 	void setOrder(const Order& order);
 	const Order& getOrder() const;
 	void saveLastOrder();
-
+	bool getPreviousMove(AntDirection& dir) const;
 private:
 	Location m_loc;
 	bool m_bValid;
