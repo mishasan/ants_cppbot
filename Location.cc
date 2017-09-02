@@ -54,3 +54,20 @@ bool Location::operator==(const Location& loc) const
 {
 	return this->row == loc.row && this->col == loc.col;
 }
+
+AntDirection Location::getCounterDirection(AntDirection dir)
+{
+	switch (dir)
+	{
+		case AntDirection::N:
+			return AntDirection::S;
+		case AntDirection::E:
+			return AntDirection::W;
+		case AntDirection::S:
+			return AntDirection::N;
+		case AntDirection::W:
+			return AntDirection::E;
+		default:
+			throw std::logic_error("Used an unknown AntDirection.");
+	}
+}

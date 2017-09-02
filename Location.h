@@ -34,6 +34,7 @@ struct Location
 	static double distance(const Location &loc1, const Location &loc2);
 	static Location getLocation(const Location &loc, AntDirection direction);
 	static Location getLocationRelative(const Location &loc, int diffRow, int diffCol);
+	static AntDirection getCounterDirection(AntDirection dir);
 };
 
 std::ostream& operator<<(std::ostream &os, const Location& loc);
