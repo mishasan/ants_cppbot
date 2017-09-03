@@ -70,30 +70,34 @@ void State::sendMoveToEngine(Ant& ant)
 };
 
 
-bool State::getAMovingDirectionTo(const Location &locFrom, const Location &locTo, AntDirection& aDirection)
-{
-	bool bFoundADirection = false;
-	
-	//	find the neighboring location thats closest to the target location and is available
-	double dMinDist = numeric_limits<double>::max();
+bool State::getAMovingDirectionTo(const Ant &ant, const Location &locTo, AntDirection& aDirection)
+{	
+	//	collect the available neighboring location by distance
 	const vector<AntDirection> vDirections = Location::getAllDirections();
-	for(auto dir : vDirections)
+	map<double, AntDirection> possibleDirections;
+	for(auto dirByDist : vDirections)
 	{
-		const Location locTestDirection = Location::getLocation(locFrom, dir);
+		const Location locTestDirection = Location::getLocation(ant.getLocation(), dirByDist);
 		if(!isTargetPositionFreeToGo(locTestDirection))
 		{
 			continue;
 		}
 
 		const double dDist = Location::distance(locTestDirection, locTo);
-		if(dDist < dMinDist)
+		possibleDirections[dDist] = dirByDist;
+	}
+
+	//	prefer the closest location to go to, but try to pick another one, if that means going backwards
+	for(auto dirByDist : possibleDirections)
+	{
+		aDirection = dirByDist.second;
+		if(!isThisGoingBackwards(ant, aDirection))
 		{
-			dMinDist = dDist;
-			aDirection = dir;
-			bFoundADirection = true;
+			break;
 		}
 	}
-	return bFoundADirection;
+
+	return !possibleDirections.empty();
 }
 
 //	returns true and a random direction with a valid target location, or false
@@ -134,7 +138,7 @@ bool State::getAnExploringDirection(Ant& ant, AntDirection& dirExploreTo)
 		}
 	}
 
-	//	don't move if there is not neighboring position available
+	//	don't move if there is no neighboring position available
 	if(mapDirByScore.empty())
 	{
 		return false;

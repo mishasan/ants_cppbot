@@ -51,7 +51,7 @@ void Bot::issueMoves()
 		if(bFoundCloseFood)
 		{
 			AntDirection dirFood = AntDirection::N;
-			if(state.getAMovingDirectionTo(locAnt, locClosestFood, dirFood))
+			if(state.getAMovingDirectionTo(ant, locClosestFood, dirFood))
 			{
 				Order order;
 				order.setOrderType(Order::OrderType::Food);

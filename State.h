@@ -51,7 +51,7 @@ struct State
     void sendMoveToEngine(Ant& ant);
 	void makeMoveLocal(Ant& ant);
  	bool getClosestFood(const Location &locFrom, Location &locClosestFood);
-	bool getAMovingDirectionTo(const Location &locFrom, const Location &locTo, AntDirection& aDirection);
+	bool getAMovingDirectionTo(const Ant &ant, const Location &locTo, AntDirection& aDirection);
 	bool getARandomDirectionFrom(const Location& locFrom, AntDirection& dirRandom);
 	bool isTargetPositionFreeToGo(const Location& locTo);
 	bool isAntOnPosition(const Location& locTo);
