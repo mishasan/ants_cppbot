@@ -21,6 +21,9 @@ public:
 	const Order& getOrder() const;
 	void saveLastOrder();
 	bool getPreviousMove(AntDirection& dir) const;
+
+	bool operator==(const Ant& ant) const;
+
 private:
 	Location m_loc;
 	bool m_bValid;

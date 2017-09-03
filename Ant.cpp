@@ -70,3 +70,8 @@ bool Ant::getPreviousMove(AntDirection& dir) const
 
 	return false;
 }
+
+bool Ant::operator==(const Ant& ant) const
+{
+	return this->getLocation() == ant.getLocation();
+}
