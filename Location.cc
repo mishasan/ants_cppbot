@@ -55,6 +55,19 @@ bool Location::operator==(const Location& loc) const
 	return this->row == loc.row && this->col == loc.col;
 }
 
+bool Location::operator<(const Location& loc) const
+{
+	if(this->row < loc.row || (this->row == loc.row && this->col < loc.col))
+	{
+		return true;		
+	}
+	else 
+	{
+		return false;
+	}
+}
+
+
 AntDirection Location::getCounterDirection(AntDirection dir)
 {
 	switch (dir)
