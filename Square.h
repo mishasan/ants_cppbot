@@ -6,7 +6,7 @@
 /*
     struct for representing a square in the grid.
 */
-const float PATHSCORE_UNKNOWN = -1.0f;
+const int PATHSCORE_UNKNOWN = -1;
 
 struct Square
 {
@@ -14,7 +14,7 @@ struct Square
     int ant, hillPlayer;
     std::vector<int> deadAnts;
 
-	float pathScore;
+	int pathScore;
 	bool pathScoreComplete;
 
     Square()

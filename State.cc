@@ -127,7 +127,7 @@ bool State::getAnExploringDirection(Ant& ant, AntDirection& dirExploreTo)
 {
 	//	sort possible Directions by Score, low to high
 	vector<AntDirection> vAllDirections = Location::getAllDirections();
-	std::map<float, AntDirection> mapDirByScore;
+	std::map<int, AntDirection> mapDirByScore;
 	for(auto dir : vAllDirections)
 	{
 		Location loc = Location::getLocation(ant.getLocation(), dir);
@@ -145,11 +145,13 @@ bool State::getAnExploringDirection(Ant& ant, AntDirection& dirExploreTo)
 	}
 
 	//	picks out of available directions that one with the best score
-	for(std::map<float, AntDirection>::reverse_iterator itScoreHighToLow = mapDirByScore.rbegin();
+	for(std::map<int, AntDirection>::reverse_iterator itScoreHighToLow = mapDirByScore.rbegin();
 		itScoreHighToLow != mapDirByScore.rend(); ++itScoreHighToLow)
 	{
 		AntDirection dir = itScoreHighToLow->second;
-
+#ifdef _DEBUG
+		int score = itScoreHighToLow->first;
+#endif
 		//	TODO: for now the ant is not allowed to go back where it came from -> could end up in trapped ants
 		if(isThisGoingBackwards(ant, dir))
 		{
@@ -223,12 +225,12 @@ bool State::getClosestFood(const Location &locFrom, Location &locClosestFood)
 	//	dont go to the food, if its too far away
 	if(dMinDist > (viewradius * 2))
 	{
-		bug << "closest food found at pos" << locClosestFood << endl;
+		bug << "closest food to " << locFrom << " found at pos " << locClosestFood << " its too far away (dist: " << dMinDist << ")" << endl;
 		return false;
 	}
 	else
 	{
-		bug << "closest food found at pos, its too far away" << locClosestFood << endl;
+		bug << "closest food to " << locFrom << " found at pos " << locClosestFood << " (dist: " << dMinDist << ")" << endl;
 		return true;
 	}
 }
@@ -268,7 +270,7 @@ void State::calcPathScore(Location& loc)
 	//	cant move on water, give lowest score right away
 	if(sq.isWater)
 	{
-		sq.pathScore = 0.0f;
+		sq.pathScore = 0;
 		sq.pathScoreComplete = true;
 		return;
 	}
@@ -307,7 +309,11 @@ void State::calcPathScore(Location& loc)
 	//	Score #Land to #Water - a lot of Water around makes a low Score, a lot of Land a high Score
 	//	a lot of fogged squares makes a high score as well, so interesting to explore
 	const int nghSize = (2 * neighbsize + 1) * (2 * neighbsize + 1);
-	sq.pathScore = 1.0f - ((float)iWaterSquaresTotal / (float) nghSize);
+	const float waterToNghRatio = (float)iWaterSquaresTotal / (float)nghSize;
+	const float ratioInv = 1.0f - waterToNghRatio;
+	const float ratio0to10 = ratioInv * 10.0f;
+	const int ratioInt = (int) ratio0to10;
+	sq.pathScore = std::min(ratioInt, 9);
 	
 	//	Do I need to check this square again because of not visible neighboring squares?
 	bool bAllNeighborSquaresVisible = iUnfoggedSquaresTotal == nghSize;
@@ -448,15 +454,14 @@ void printScoreMap(ostream& os, const State& state)
 	{
 		for(unsigned int col=0; col < Map::map().cols(); col++)
 		{
-			const float& fScore = state.grid[row][col].pathScore;
-			if(fScore < 0.0f)
+			const int& score = state.grid[row][col].pathScore;
+			if(score < 0)
 			{
 				os << '?';
 			}
 			else
 			{
-				int score1to9 = std::min((int)(fScore * 10.0), 9);
-				os << score1to9;
+				os << score;
 			}
 		}
 		os << endl;
