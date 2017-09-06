@@ -42,7 +42,6 @@ void Ant::setOrder(const Order& order)
 
 const Order& Ant::getOrder() const
 {
-
 	return m_order;
 }
 
@@ -50,6 +49,19 @@ void Ant::saveLastOrder()
 {
 	m_lastOrders.push_back(m_order);
 	m_order.reset();
+}
+
+Order Ant::getLastOrder() const
+{
+	if(m_lastOrders.empty())
+	{
+		return Order();
+	}
+	else
+	{
+		return *m_lastOrders.rbegin();
+	}
+
 }
 
 bool Ant::getPreviousMove(AntDirection& dir) const

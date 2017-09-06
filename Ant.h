@@ -20,10 +20,11 @@ public:
 	void setOrder(const Order& order);
 	const Order& getOrder() const;
 	void saveLastOrder();
+	Order getLastOrder() const;
 	bool getPreviousMove(AntDirection& dir) const;
 
 	bool operator==(const Ant& ant) const;
-
+	
 private:
 	Location m_loc;
 	bool m_bValid;
