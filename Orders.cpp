@@ -37,3 +37,13 @@ Order::OrderType Order::getOrderType() const
 {
 	return m_OrderType;
 }
+
+const Location& Order::getTarget() const
+{
+	return m_Target;
+}
+
+void Order::setTarget(const Location& locTarget)
+{
+	m_Target = locTarget;
+}

@@ -1,6 +1,7 @@
 #pragma once
 
 #include <vector>
+#include "Location.h"
 
 enum class AntDirection;
 
@@ -15,10 +16,12 @@ public:
 	void reset();
 	void setOrderType(OrderType ordertype);
 	void setMove(AntDirection antDir);
+	void setTarget(const Location& locTarget);
 	AntDirection getMove() const;
 	OrderType getOrderType() const;
-
+	const Location& getTarget() const;
 private:
 	OrderType m_OrderType;
 	AntDirection m_dirGoTo;
+	Location m_Target;
 };
