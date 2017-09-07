@@ -1,5 +1,9 @@
 #include "Ant.h"
 
+#if _DEBUG
+#include <sstream>
+#endif
+
 Ant::Ant(const Location& loc)
 {
 	m_loc = loc;
@@ -87,3 +91,17 @@ bool Ant::operator==(const Ant& ant) const
 {
 	return this->getLocation() == ant.getLocation();
 }
+
+#ifdef _DEBUG
+std::string Ant::print() const
+{
+	std::stringstream s;
+	s << "Ant: " << "[" << m_loc.row << ", " << m_loc.col << "] ";
+	s << "O: " << m_order.print() << " ";
+	if(!m_lastOrders.empty())
+	{
+		s << " Last Order: " << m_lastOrders.rbegin()->print() << " ";
+	}
+	return s.str();
+}
+#endif

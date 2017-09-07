@@ -24,6 +24,10 @@ public:
 	bool getPreviousMove(AntDirection& dir) const;
 
 	bool operator==(const Ant& ant) const;
+
+#ifdef _DEBUG
+	std::string print() const;
+#endif // _DEBUG
 	
 private:
 	Location m_loc;

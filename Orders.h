@@ -20,6 +20,11 @@ public:
 	AntDirection getMove() const;
 	OrderType getOrderType() const;
 	const Location& getTarget() const;
+
+#if _DEBUG
+	std::string print() const;
+#endif
+
 private:
 	OrderType m_OrderType;
 	AntDirection m_dirGoTo;

@@ -1,5 +1,9 @@
 #include "Orders.h"
 
+#ifdef _DEBUG
+#include <sstream>
+#endif // DEBUG
+
 #include "Location.h"
 
 Order::Order()
@@ -47,3 +51,12 @@ void Order::setTarget(const Location& locTarget)
 {
 	m_Target = locTarget;
 }
+
+#ifdef _DEBUG
+std::string Order::print() const
+{
+	std::stringstream s;
+	s << "DirGoTo: " << m_dirGoTo << " Target: " << m_Target << " OT: " << (int)m_OrderType;
+	return s.str();
+}
+#endif // _DEBUG
