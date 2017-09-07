@@ -66,9 +66,11 @@ void State::sendMoveToEngine(Ant& ant)
     cout << "o " << loc.row << " " << loc.col << " " << moveDirection << endl;
 	bug << "o " << loc.row << " " << loc.col << " " << moveDirection << endl;
 
+#if _DEBUG
+	bug << ant.print() << endl;
+#endif
 	ant.moveByOrder();
-};
-
+}
 
 bool State::getAMovingDirectionTo(const Ant &ant, const Location &locTo, AntDirection& aDirection)
 {	
@@ -190,49 +192,63 @@ bool State::isThisGoingBackwards(const Ant& ant, const AntDirection dir) const
 	return ant.getPreviousMove(dirPreviousMove) && dir == Location::getCounterDirection(dirPreviousMove);
 }
 
-bool State::getClosestFood(const Location &locFrom, Location &locClosestFood)
+bool State::getClosestFood(Ant& ant, std::map<Location, Location>& foodOrders, Location &locClosestFood)
 {
+	const Location& locAnt = ant.getLocation();
+
 	//	if there is non, they have to go explore
 	if (food.empty())
 	{
-		bug << "no food found from pos" << locFrom << endl;
-		locClosestFood = locFrom;
+		bug << "no food found from pos" << ant.getLocation() << endl;
 		return false;
 	}
 
+	//	find close food sorted by distance to Location
 	double dMinDist = std::numeric_limits<double>::max();
-	std::vector<Location>::iterator itClosestFood = food.begin();
-
-	//	find food with shortest distance to Location
-	for(std::vector<Location>::iterator it = food.begin(); it != food.end(); ++it)
+	std::vector<Location>::iterator itClosestFood = food.end();
+	for(std::vector<Location>::iterator itFood = food.begin(); itFood != food.end(); ++itFood)
 	{
-		double dDist = Location::distance(locFrom, *it);
-		
-		//	food on same position as ant or error in distance?
-		if(dDist <= numeric_limits<double>::epsilon())
-		{
+		//	TODO: use path finding mechanism too find true distance
+		const double dDistToAnt = Location::distance(locAnt, *itFood);
+
+		//	if there is an order for another Ant thats closer to that food, its taken care of
+		if(isAnotherAntCloserToThisFood(foodOrders, *itFood, dDistToAnt))
 			continue;
-		}
-		
-		// find food with min distance
-		if(dDist < dMinDist)
+
+		//	only go to food thats not too far away and find closest one
+		if(dDistToAnt < dMinDist)
 		{
-			locClosestFood = *it;
-			dMinDist = dDist;
+			itClosestFood = itFood;
+			dMinDist = dDistToAnt;
 		}
 	}
-
-	//	dont go to the food, if its too far away
-	if(dMinDist > (viewradius * 2))
+	
+	if(itClosestFood == food.end())
 	{
-		bug << "closest food to " << locFrom << " found at pos " << locClosestFood << " its too far away (dist: " << dMinDist << ")" << endl;
+		bug << "no food found thats close enough to ant at " << locAnt << endl;
 		return false;
 	}
 	else
 	{
-		bug << "closest food to " << locFrom << " found at pos " << locClosestFood << " (dist: " << dMinDist << ")" << endl;
+		locClosestFood = *itClosestFood;
 		return true;
 	}
+}
+
+bool State::isAnotherAntCloserToThisFood(map<Location, Location> &foodOrders, const Location& locFood, double dDistToAnt)
+{
+	auto existingFoodOrder = foodOrders.find(locFood);
+	if(existingFoodOrder != foodOrders.end())
+	{
+		const Location& otherAntForFood = existingFoodOrder->second;
+		double dDistOtherAnt = Location::distance(otherAntForFood, locFood);
+		if(dDistOtherAnt < dDistToAnt)
+		{
+			return true;
+		}
+	}
+
+	return false;
 }
 
 //	calculating a score for each Square in the map representing closeness to water [0...1] 0 very close, 1 far away
@@ -373,14 +389,13 @@ void State::addAnt(unsigned int row, unsigned int col, unsigned int antPlayerNr)
 	if(antPlayerNr == playerNrMe)
 	{
 		//	check if Ant is already in list
-		std::vector<Ant>::iterator itFnd = std::find_if(myAnts.begin(), myAnts.end(), [antLoc] (Ant& ant) { return ant.getLocation() == antLoc; } );
-		if(itFnd != myAnts.end())
+		Ant* pAnt = getAntByLocation(antLoc);
+		if(pAnt != nullptr)
 		{
-			Ant& ant = *itFnd;
-			ant.saveLastOrder();
+			pAnt->saveLastOrder();
 
 			//	mark existing Ant as still available in this turn
-			ant.setValid();
+			pAnt->setValid();
 		}
 		else
 		{
@@ -392,6 +407,19 @@ void State::addAnt(unsigned int row, unsigned int col, unsigned int antPlayerNr)
 	else
 	{
 		enemyAnts.push_back(antLoc);
+	}
+}
+
+Ant* State::getAntByLocation(const Location& loc)
+{
+	std::vector<Ant>::iterator itFnd = std::find_if(myAnts.begin(), myAnts.end(), [loc] (Ant& ant) { return ant.getLocation() == loc; } );
+	if(itFnd != myAnts.end())
+	{
+		return &(*itFnd);
+	}
+	else
+	{
+		return nullptr;
 	}
 }
 
@@ -409,6 +437,19 @@ void State::updateAntList()
 	myAnts.erase(std::remove_if(myAnts.begin(), myAnts.end(), [] (Ant& ant) { return !ant.isValid(); }), myAnts.end());
 
 	// TODO: collect invalid ants as dead ants for gathering information about fights or movement errors
+}
+
+void State::collectFoodOrders(std::map<Location, Location>& foodOrders)
+{
+	for(auto ant : myAnts)
+	{
+		const Order& order = ant.getLastOrder();
+		if(order.getOrderType() == Order::OrderType::Food)
+		{
+			const Location& foodLoc = order.getTarget();
+			foodOrders[foodLoc] = ant.getLocation();
+		}
+	}
 }
 
 /*

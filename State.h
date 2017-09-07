@@ -6,6 +6,7 @@
 #include <cmath>
 #include <string>
 #include <vector>
+#include <map>
 
 #include "Timer.h"
 #include "Bug.h"
@@ -50,9 +51,14 @@ struct State
 
     void sendMoveToEngine(Ant& ant);
 	void makeMoveLocal(Ant& ant);
- 	bool getClosestFood(const Location &locFrom, Location &locClosestFood);
+ 	
+	bool getClosestFood(Ant& ant, std::map<Location, Location>& foodOrder, Location &locClosestFood);
+	bool isAnotherAntCloserToThisFood(std::map<Location, Location> &foodOrders, const Location& locFood, double dDistToAnt);
+
 	bool getAMovingDirectionTo(const Ant &ant, const Location &locTo, AntDirection& aDirection);
 	bool getARandomDirectionFrom(const Location& locFrom, AntDirection& dirRandom);
+	bool getAnExploringDirection(Ant& ant, AntDirection& dir);
+
 	bool isTargetPositionFreeToGo(const Location& locTo);
 	bool isAntOnPosition(const Location& locTo);
 	bool isThisGoingBackwards(const Ant& ant, const AntDirection dir) const;
@@ -60,10 +66,13 @@ struct State
     void updateVisionInformation();
 	void updatePathScore();
 	void calcPathScore(Location& loc);
+	
 	void addAnt(unsigned int row, unsigned int col, unsigned int player);
+	Ant* getAntByLocation(const Location& loc);
 	void markPreviousAnts();
 	void updateAntList();
-	bool getAnExploringDirection(Ant& ant, AntDirection& dir);
+	void collectFoodOrders(std::map<Location, Location>& foodOrders);
+
 };
 
 std::ostream& operator<<(std::ostream &os, const State &state);

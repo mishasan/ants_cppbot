@@ -40,22 +40,43 @@ void Bot::playGame()
 void Bot::issueMoves()
 {
 	//picks out moves for each ant
+	std::map<Location, Location> foodOrders;
+	state.collectFoodOrders(foodOrders);
+
 	for(auto& ant : state.myAnts)
 	{
-		const Location& locAnt = ant.getLocation();
-
 		bool bMovedAnt = false;
 
+		//	TODO: collect foodOrders first, set Orders in Ants second and then process still free ants
 		Location locClosestFood;
-		bool bFoundCloseFood = state.getClosestFood(locAnt, locClosestFood);
+		bool bFoundCloseFood = state.getClosestFood(ant, foodOrders, locClosestFood);
 		if(bFoundCloseFood)
 		{
 			AntDirection dirFood = AntDirection::N;
 			if(state.getAMovingDirectionTo(ant, locClosestFood, dirFood))
 			{
+				//	if another ant is taking care of that food, switch order to this ant
+				auto existingFoodOrder = foodOrders.find(locClosestFood);
+				if(existingFoodOrder != foodOrders.end())
+				{
+					const Location& locAntMoreDistant = existingFoodOrder->second;
+					Ant* pDistantAnt = state.getAntByLocation(locAntMoreDistant);
+					if(pDistantAnt != nullptr && !(pDistantAnt == &ant))
+					{
+						pDistantAnt->saveLastOrder();
+					}
+					existingFoodOrder->second = ant.getLocation();
+					//	TODO: wenn ich der anderen Ameise den Auftrag wegnehme, muss ich ihr einen neuen geben! (jetzt: einfach bis naechste Runde warten)
+				}
+				else
+				{
+					foodOrders[locClosestFood] = ant.getLocation();
+				}
+
 				Order order;
 				order.setOrderType(Order::OrderType::Food);
 				order.setMove(dirFood);
+				order.setTarget(locClosestFood);
 				ant.setOrder(order);
 				state.makeMoveLocal(ant);
 				bMovedAnt = true;
@@ -69,8 +90,9 @@ void Bot::issueMoves()
 			//if(state.getARandomDirectionFrom(locAnt, dir))
 			{
 				Order order;
-				order.setOrderType(Order::OrderType::Food);
+				order.setOrderType(Order::OrderType::Explore);
 				order.setMove(dir);
+				order.setTarget(Location::getLocation(ant.getLocation(), dir));
 				ant.setOrder(order);
 				state.makeMoveLocal(ant);
 				bMovedAnt = true;
