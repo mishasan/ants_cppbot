@@ -93,7 +93,8 @@ bool State::getAMovingDirectionTo(const Ant &ant, const Location &locTo, AntDire
 	for(auto dirByDist : possibleDirections)
 	{
 		aDirection = dirByDist.second;
-		if(!isThisGoingBackwards(ant, aDirection))
+		//if(!isThisGoingBackwards(ant, aDirection))
+		if(!isMoveALoop(ant, aDirection))
 		{
 			break;
 		}
@@ -155,7 +156,8 @@ bool State::getAnExploringDirection(Ant& ant, AntDirection& dirExploreTo)
 		int score = itScoreHighToLow->first;
 #endif
 		//	TODO: for now the ant is not allowed to go back where it came from -> could end up in trapped ants
-		if(isThisGoingBackwards(ant, dir))
+		//if(isThisGoingBackwards(ant, dir))
+		if(isMoveALoop(ant, dir))
 		{
 			continue;
 		}
@@ -450,6 +452,29 @@ void State::collectFoodOrders(std::map<Location, Location>& foodOrders)
 			foodOrders[foodLoc] = ant.getLocation();
 		}
 	}
+}
+
+//	checks a movement if it is making the ant moving in circles
+//	TODO: detect general loops with a size/length threshold
+bool State::isMoveALoop(const Ant& ant, const AntDirection dir)
+{
+	std::vector<AntDirection> prevMoves;
+	ant.getLastMoves(prevMoves);
+
+	if(prevMoves.size() < 2)
+	{
+		return false;
+	}
+
+	//	get tiny loops (moving to counter direction and back again)
+	const AntDirection counterDir = Location::getCounterDirection(dir);
+	if(prevMoves[0] == counterDir && prevMoves[1] == dir)
+	{
+		return true;
+	}
+	//for(size_t d = 0; d < prevMoves.size(); ++d)
+
+	return false;
 }
 
 /*

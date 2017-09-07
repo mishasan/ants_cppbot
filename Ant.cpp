@@ -105,3 +105,18 @@ std::string Ant::print() const
 	return s.str();
 }
 #endif
+
+//	return the last moves in LIFO (previous move comes first)
+void Ant::getLastMoves(std::vector<AntDirection>& moves) const
+{
+	for(std::vector<Order>::const_reverse_iterator it = m_lastOrders.rbegin(); it != m_lastOrders.rend(); ++it)
+	{
+		const Order& o = *it;
+		if(o.getOrderType() == Order::OrderType::Idle)
+		{
+			continue;
+		}
+
+		moves.push_back(o.getMove());
+	}
+}

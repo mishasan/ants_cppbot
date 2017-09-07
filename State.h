@@ -62,6 +62,7 @@ struct State
 	bool isTargetPositionFreeToGo(const Location& locTo);
 	bool isAntOnPosition(const Location& locTo);
 	bool isThisGoingBackwards(const Ant& ant, const AntDirection dir) const;
+	bool isMoveALoop(const Ant& ant, const AntDirection dir);
 
     void updateVisionInformation();
 	void updatePathScore();
@@ -72,7 +73,6 @@ struct State
 	void markPreviousAnts();
 	void updateAntList();
 	void collectFoodOrders(std::map<Location, Location>& foodOrders);
-
 };
 
 std::ostream& operator<<(std::ostream &os, const State &state);

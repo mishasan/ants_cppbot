@@ -22,6 +22,7 @@ public:
 	void saveLastOrder();
 	Order getLastOrder() const;
 	bool getPreviousMove(AntDirection& dir) const;
+	void getLastMoves(std::vector<AntDirection>& moves) const;
 
 	bool operator==(const Ant& ant) const;
 
