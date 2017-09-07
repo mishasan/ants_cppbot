@@ -45,7 +45,7 @@ void Bot::issueMoves()
 
 	for(auto& ant : state.myAnts)
 	{
-		bool bMovedAnt = false;
+		Order antOrder;
 
 		//	TODO: collect foodOrders first, set Orders in Ants second and then process still free ants
 		Location locClosestFood;
@@ -73,13 +73,9 @@ void Bot::issueMoves()
 					foodOrders[locClosestFood] = ant.getLocation();
 				}
 
-				Order order;
-				order.setOrderType(Order::OrderType::Food);
-				order.setMove(dirFood);
-				order.setTarget(locClosestFood);
-				ant.setOrder(order);
-				state.makeMoveLocal(ant);
-				bMovedAnt = true;
+				antOrder.setOrderType(Order::OrderType::Food);
+				antOrder.setMove(dirFood);
+				antOrder.setTarget(locClosestFood);
 			}
 		}
 		else
@@ -89,21 +85,16 @@ void Bot::issueMoves()
 			if(state.getAnExploringDirection(ant, dir))
 			//if(state.getARandomDirectionFrom(locAnt, dir))
 			{
-				Order order;
-				order.setOrderType(Order::OrderType::Explore);
-				order.setMove(dir);
-				order.setTarget(Location::getLocation(ant.getLocation(), dir));
-				ant.setOrder(order);
-				state.makeMoveLocal(ant);
-				bMovedAnt = true;
+				antOrder.setOrderType(Order::OrderType::Explore);
+				antOrder.setMove(dir);
+				antOrder.setTarget(Location::getLocation(ant.getLocation(), dir));
 			}
 		}
 
-		if(!bMovedAnt)
+		ant.setOrder(antOrder);
+		if(antOrder.getOrderType() != Order::OrderType::Idle)
 		{
-			Order orderIdle;
-			orderIdle.setOrderType(Order::OrderType::Idle);
-			ant.setOrder(orderIdle);
+			state.makeMoveLocal(ant);
 		}
 	}
 }
