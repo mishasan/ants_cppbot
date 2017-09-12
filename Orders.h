@@ -30,3 +30,5 @@ private:
 	AntDirection m_dirGoTo;
 	Location m_Target;
 };
+
+std::ostream& operator<<(std::ostream &os, const Order::OrderType& loc);

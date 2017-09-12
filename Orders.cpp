@@ -52,11 +52,29 @@ void Order::setTarget(const Location& locTarget)
 	m_Target = locTarget;
 }
 
-#ifdef _DEBUG
 std::string Order::print() const
 {
 	std::stringstream s;
-	s << "DirGoTo: " << m_dirGoTo << " Target: " << m_Target << " OT: " << (int)m_OrderType;
+	s << "DirGoTo: " << m_dirGoTo << " Target: " << m_Target << " OT: " << m_OrderType;
 	return s.str();
 }
-#endif // _DEBUG
+
+std::ostream& operator<<(std::ostream &os, const Order::OrderType& ot)
+{
+	switch (ot)
+	{
+	case Order::OrderType::Idle:
+		os << "Idle";
+		break;
+	case Order::OrderType::Explore:
+		os << "Explore";
+		break;
+	case Order::OrderType::Food:
+		os << "Food";
+		break;
+	default:
+		os << "Other";
+		break;
+	}
+	return os;
+}
