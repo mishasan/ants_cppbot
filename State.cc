@@ -67,7 +67,7 @@ void State::sendMoveToEngine(Ant& ant)
 	bug << "o " << loc.row << " " << loc.col << " " << moveDirection << endl;
 
 #if _DEBUG
-	bug << ant.print() << endl;
+	bug << "sendMoveToEngine " << ant.print() << endl;
 #endif
 	ant.moveByOrder();
 }
@@ -294,15 +294,16 @@ void State::calcPathScore(Location& loc)
 	}
 
 	//	size for 2D neighborhood of one square
-	const int neighbsize = 3; // TODO: make global and able to adapt to maze, viewradius etc
+	const int neighbsize = 1; // TODO: make global and able to adapt to maze, viewradius etc
 
 	int iUnfoggedSquaresTotal = 0;
 	int iWaterSquaresTotal = 0;
 	int iLandSquaresTotal = 0;
+	int iWaterDirectNgh = 0;
 	
-	for(int col = -neighbsize; col < neighbsize; ++col)
+	for(int col = -neighbsize; col <= neighbsize; ++col)
 	{
-		for(int row = -neighbsize; row < neighbsize; ++row)
+		for(int row = -neighbsize; row <= neighbsize; ++row)
 		{
 			const Location locRelative = Location::getLocationRelative(loc, col, row);
 			Square& sqRel = grid[locRelative.row][locRelative.col];
@@ -315,6 +316,10 @@ void State::calcPathScore(Location& loc)
 			if(sqRel.isWater)
 			{
 				iWaterSquaresTotal++;
+				if((abs(col) < 2) && (abs(row) < 2))
+				{
+					iWaterDirectNgh++;
+				}
 			}
 			else if(sqRel.isLand)
 			{
@@ -327,11 +332,7 @@ void State::calcPathScore(Location& loc)
 	//	Score #Land to #Water - a lot of Water around makes a low Score, a lot of Land a high Score
 	//	a lot of fogged squares makes a high score as well, so interesting to explore
 	const int nghSize = (2 * neighbsize + 1) * (2 * neighbsize + 1);
-	const float waterToNghRatio = (float)iWaterSquaresTotal / (float)nghSize;
-	const float ratioInv = 1.0f - waterToNghRatio;
-	const float ratio0to10 = ratioInv * 10.0f;
-	const int ratioInt = (int) ratio0to10;
-	sq.pathScore = std::min(ratioInt, 9);
+	sq.pathScore = nghSize - iWaterDirectNgh;
 	
 	//	Do I need to check this square again because of not visible neighboring squares?
 	bool bAllNeighborSquaresVisible = iUnfoggedSquaresTotal == nghSize;
