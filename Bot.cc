@@ -29,6 +29,9 @@ void Bot::playGame()
         state.updateVisionInformation();
 		state.updatePathScore();
 
+		state.bug << "turn " << state.turn << ":" << endl;
+		state.bug << state << endl;
+
 		issueMoves();
         makeMoves();
         endTurn();
@@ -39,48 +42,37 @@ void Bot::playGame()
 //	moves ants on local grid, it will be sent to the engine later
 void Bot::issueMoves()
 {
-	//picks out moves for each ant
 	std::map<Location, Location> foodOrders;
 	state.collectFoodOrders(foodOrders);
 
+	//picks out moves for each ant
 	for(auto& ant : state.myAnts)
 	{
 		Order antOrder;
 
-		//	TODO: collect foodOrders first, set Orders in Ants second and then process still free ants
+		//	try to place a food order for this ant
 		Location locClosestFood;
 		bool bFoundCloseFood = state.getClosestFood(ant, foodOrders, locClosestFood);
 		if(bFoundCloseFood)
 		{
-			AntDirection dirFood = AntDirection::N;
-			if(state.getAMovingDirectionTo(ant, locClosestFood, dirFood))
+			auto existingFoodOrder = foodOrders.find(locClosestFood);
+			if(existingFoodOrder == foodOrders.end())
 			{
-				//	if another ant is taking care of that food, switch order to this ant
-				auto existingFoodOrder = foodOrders.find(locClosestFood);
-				if(existingFoodOrder != foodOrders.end())
-				{
-					const Location& locAntMoreDistant = existingFoodOrder->second;
-					Ant* pDistantAnt = state.getAntByLocation(locAntMoreDistant);
-					if(pDistantAnt != nullptr && !(pDistantAnt == &ant))
-					{
-						pDistantAnt->saveLastOrder();
-					}
-					existingFoodOrder->second = ant.getLocation();
-					//	TODO: wenn ich der anderen Ameise den Auftrag wegnehme, muss ich ihr einen neuen geben! (jetzt: einfach bis naechste Runde warten)
-				}
-				else
+				AntDirection dirFood = AntDirection::N;
+				bool bFoundGoodDirection = state.getAMovingDirectionTo(ant, locClosestFood, dirFood);
+				if(bFoundGoodDirection)
 				{
 					foodOrders[locClosestFood] = ant.getLocation();
+					antOrder.setOrderType(Order::OrderType::Food);
+					antOrder.setMove(dirFood);
+					antOrder.setTarget(locClosestFood);
 				}
-
-				antOrder.setOrderType(Order::OrderType::Food);
-				antOrder.setMove(dirFood);
-				antOrder.setTarget(locClosestFood);
 			}
 		}
-		else
+
+		//	no food order means, go explore
+		if(antOrder.getOrderType() == Order::OrderType::Idle)
 		{
-			//TODO: if there is no good direction towards food, send ant exploring?
 			AntDirection dir = AntDirection::N;
 			if(state.getAnExploringDirection(ant, dir))
 			//if(state.getARandomDirectionFrom(locAnt, dir))
@@ -102,9 +94,6 @@ void Bot::issueMoves()
 //makes the bots moves for the turn
 void Bot::makeMoves()
 {
-    state.bug << "turn " << state.turn << ":" << endl;
-    state.bug << state << endl;
-
 	for(auto& ant : state.myAnts)
 	{
 		if(ant.getOrder().getOrderType() != Order::OrderType::Idle)
