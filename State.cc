@@ -459,7 +459,6 @@ void State::collectFoodOrders(std::map<Location, Location>& foodOrders)
 }
 
 //	checks a movement if it is making the ant moving in circles
-//	TODO: detect general loops with a size/length threshold
 bool State::isMoveALoop(const Ant& ant, const AntDirection dir)
 {
 	std::vector<AntDirection> prevMoves;
@@ -470,60 +469,38 @@ bool State::isMoveALoop(const Ant& ant, const AntDirection dir)
 		return false;
 	}
 
-	stringstream ss;
-	ss << ant.getLocation() << " " << "Moves #" << prevMoves.size() << " "; 
-	{		
-		//	add coordinate-changing part of Directions (out of XY-Values) 
-		//	to check if all movements cancel each other and the ant ends up at the same place
-		array<int, 2> dirSums = {0, 0}; // NS, EW
-		const int maxmoves = 10;
-		for(size_t d = 0; d < maxmoves && d < prevMoves.size(); ++d)
+	//	add coordinate-changing part of Directions (out of XY-Values) 
+	//	to check if all movements cancel each other and the ant ends up at the same place
+	array<int, 2> dirSums = {0, 0}; // NS, EW
+	const int maxmoves = 10;
+	for(size_t d = 0; d < maxmoves && d < prevMoves.size(); ++d)
+	{
+		const AntDirection& dirPrev = prevMoves[d];
+		switch (dirPrev)
 		{
-			const AntDirection& dirPrev = prevMoves[d];
-			switch (dirPrev)
-			{
-				case AntDirection::E:
-					dirSums[1] += 1;
-					break;
-				case AntDirection::W:
-					dirSums[1] -= 1;
-					break;
-				case AntDirection::N:
-					dirSums[0] -= 1;
-					break;
-				case AntDirection::S:
-					dirSums[0] += 1;
-				default:
-					break;
-			}
+			case AntDirection::E:
+				dirSums[1] += 1;
+				break;
+			case AntDirection::W:
+				dirSums[1] -= 1;
+				break;
+			case AntDirection::N:
+				dirSums[0] -= 1;
+				break;
+			case AntDirection::S:
+				dirSums[0] += 1;
+			default:
+				break;
+		}
 
-			bool dirSumsCancelOut = dirSums[0] == 0 && dirSums[1] == 0;
+		bool dirSumsCancelOut = dirSums[0] == 0 && dirSums[1] == 0;
 
-			ss << "(" << dirPrev << "," << "[NS:" << dirSums[0] << ",EW:" << dirSums[1] << "] " << (dirSumsCancelOut ? "Yes" : "No") << "),"; 
-
-			//	break, if movements cancel each other out and the planned movement is equal to the first of that circle
-			if(dirSumsCancelOut)
-			{
-				if(dir == dirPrev)
-				{
-					ss << " " << "Move " << dir << " is first cycle Move " << dirPrev << endl;
-					bug << ss.str();
-					return true;
-
-				}
-				else
-				{
-					ss << " " << "Move " << dir << " breaks cycle " << endl;
-					bug << ss.str();
-					return false;
-				}
-			}
- 		}
-	}
-
-
-	ss << " Move " << dir << " is no cycle Move " << endl;
-	bug << ss.str();
+		//	break, if movements cancel each other out and the planned movement is equal to the first of that circle
+		if(dirSumsCancelOut)
+		{
+			return dir == dirPrev;
+		}
+ 	}
 
 	return false;
 }
