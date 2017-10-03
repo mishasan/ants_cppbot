@@ -20,12 +20,6 @@ std::ostream& operator<<(std::ostream &os, const AntDirection& e)
 	return os;
 }
 
-const std::vector<AntDirection> Location::getAllDirections()
-{
-	AntDirection dirs[] = {AntDirection::N, AntDirection::E, AntDirection::S, AntDirection::W};
-	return std::vector<AntDirection> (dirs, dirs + 4);	//VS compliant initialization by array values
-}
-
 //returns the euclidean distance between two locations with the edges wrapped
 double Location::distance(const Location &loc1, const Location &loc2)
 {
@@ -53,6 +47,11 @@ Location Location::getLocationRelative(const Location &loc, int diffRow, int dif
 bool Location::operator==(const Location& loc) const
 {
 	return this->row == loc.row && this->col == loc.col;
+}
+
+bool Location::operator!=(const Location& loc) const
+{
+	return this->row != loc.row || this->col != loc.col;
 }
 
 bool Location::operator<(const Location& loc) const

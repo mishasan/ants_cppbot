@@ -54,9 +54,8 @@ void State::sendMoveToEngine(Ant& ant)
 bool State::getAMovingDirectionTo(const Ant &ant, const Location &locTo, AntDirection& aDirection)
 {	
 	//	collect the available neighboring location by distance
-	const vector<AntDirection> vDirections = Location::getAllDirections();
 	map<double, AntDirection> possibleDirections;
-	for(auto dirByDist : vDirections)
+	for(auto dirByDist : AllAntDirections)
 	{
 		const Location locTestDirection = Location::getLocation(ant.getLocation(), dirByDist);
 		if(!isTargetPositionFreeToGo(locTestDirection))
@@ -84,7 +83,7 @@ bool State::getAMovingDirectionTo(const Ant &ant, const Location &locTo, AntDire
 //	returns true and a random direction with a valid target location, or false
 bool State::getARandomDirectionFrom(const Location& locFrom, AntDirection& dirRandom)
 {
-	vector<AntDirection> vAllDirections = Location::getAllDirections();
+	vector<AntDirection> vAllDirections(AllAntDirections.begin(), AllAntDirections.end());
 #ifdef _DEBUG
 	unsigned int ranseed = (unsigned int)seed; 
 #else
@@ -107,9 +106,8 @@ bool State::getARandomDirectionFrom(const Location& locFrom, AntDirection& dirRa
 bool State::getAnExploringDirection(Ant& ant, AntDirection& dirExploreTo)
 {
 	//	sort possible Directions by Score, low to high
-	vector<AntDirection> vAllDirections = Location::getAllDirections();
 	std::map<int, AntDirection> mapDirByScore;
-	for(auto dir : vAllDirections)
+	for(auto dir : AllAntDirections)
 	{
 		Location loc = Location::getLocation(ant.getLocation(), dir);
 		if(isTargetPositionFreeToGo(loc))
@@ -328,8 +326,6 @@ void State::calcPathScore(Location& loc)
 */
 void State::updateVisionInformation()
 {
-	const vector<AntDirection> vDirections = Location::getAllDirections();
-
     for(const auto& ant : myAnts)
     {
 		const Location& antLoc = ant.getLocation();
@@ -345,7 +341,7 @@ void State::updateVisionInformation()
             const Location curLoc = locQueue.front();
             locQueue.pop();
 						
-			for(auto dir : vDirections)
+			for(auto dir : AllAntDirections)
 			{
                 const Location nLoc = Location::getLocation(curLoc, dir);
                 if(!visited[nLoc.row][nLoc.col] && Location::distance(antLoc, nLoc) <= viewradius)
