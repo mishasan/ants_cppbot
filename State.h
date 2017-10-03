@@ -15,15 +15,10 @@
 
 class Ant;
 
-/*
-    struct to store current state information
-*/
-struct State
+class State
 {
-    /*
-        Variables
-    */
-    int turn, turns,
+public:
+	int turn, turns,
         playerCount;
     double attackradius, spawnradius, viewradius;
     double loadtime, turntime;
@@ -32,7 +27,6 @@ struct State
     bool gameover;
     long long seed;
 
-    std::vector<std::vector<Square> > grid;
     std::vector<Location> enemyAnts, myHills, enemyHills, food;
 	std::vector<Ant> myAnts;
 
@@ -45,13 +39,10 @@ struct State
     State();
     ~State();
 
-    void setup();
     void reset();
-	void resetCellsToLand();
-
+	
     void sendMoveToEngine(Ant& ant);
-	void makeMoveLocal(Ant& ant);
- 	
+
 	bool getClosestFood(Ant& ant, std::map<Location, Location>& foodOrder, Location &locClosestFood);
 	bool isAnotherAntCloserToThisFood(std::map<Location, Location> &foodOrders, const Location& locFood, double dDistToAnt);
 
@@ -80,7 +71,5 @@ std::istream& operator>>(std::istream &is, State &state);
 void readTurnType(std::istream &is, State &state);
 void readGameParameters(std::istream &is, State &state);
 void readCurrentTurnToState(std::istream &is, State &state);
-void printKnownMap(std::ostream& os, const State& state);
-void printScoreMap(std::ostream& os, const State& state);
 
 #endif //STATE_H_

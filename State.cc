@@ -27,12 +27,6 @@ State::~State()
     bug.close();
 };
 
-//sets the state up
-void State::setup()
-{
-    grid = vector<vector<Square> >(Map::map().rows(), vector<Square>(Map::map().cols(), Square()));
-};
-
 // clears the bots ant vector and resets cells
 void State::reset()
 {
@@ -41,26 +35,7 @@ void State::reset()
     myHills.clear();
     enemyHills.clear();
     food.clear();
-    resetCellsToLand();
-};
-
-//resets all non-water squares to land
-void State::resetCellsToLand()
-{
-	for(unsigned int row = 0; row < Map::map().rows(); row++)
-        for(unsigned int col = 0; col < Map::map().cols(); col++)
-            if(!grid[row][col].isWater)
-                grid[row][col].reset();
-}
-
-void State::makeMoveLocal(Ant& ant)
-{
-	const Location& oldLoc = ant.getLocation();
-	Location newLoc = ant.getNewLocation();
-	bug << "makeMoveLocal: From " << oldLoc << " to " << newLoc << " Order: " << ant.getOrder().print() << endl;
-
-	grid[newLoc.row][newLoc.col].ant = grid[oldLoc.row][oldLoc.col].ant;
-	grid[oldLoc.row][oldLoc.col].ant = -1;
+    Map::map().resetCellsToLand();
 }
 
 void State::sendMoveToEngine(Ant& ant)
@@ -139,7 +114,7 @@ bool State::getAnExploringDirection(Ant& ant, AntDirection& dirExploreTo)
 		Location loc = Location::getLocation(ant.getLocation(), dir);
 		if(isTargetPositionFreeToGo(loc))
 		{
-			const Square& sq = grid[loc.row][loc.col];
+			const Square& sq = Map::map()[loc.row][loc.col];
 			mapDirByScore[sq.pathScore] = dir;
 		}
 	}
@@ -176,7 +151,7 @@ bool State::getAnExploringDirection(Ant& ant, AntDirection& dirExploreTo)
 
 bool State::isTargetPositionFreeToGo(const Location& locTo)
 {
-	const Square& sqTo = grid[locTo.row][locTo.col];
+	const Square& sqTo = Map::map()[locTo.row][locTo.col];
 	if(sqTo.isWater || isAntOnPosition(locTo) || sqTo.isHill)
 	{
 		return false;
@@ -187,7 +162,7 @@ bool State::isTargetPositionFreeToGo(const Location& locTo)
 
 bool State::isAntOnPosition(const Location& loc)
 {
-	const Square& sqTo = grid[loc.row][loc.col];
+	const Square& sqTo = Map::map()[loc.row][loc.col];
 	return sqTo.ant >= 0;
 }
 
@@ -274,7 +249,7 @@ void State::updatePathScore()
 //	calcs score for a square being close to water
 void State::calcPathScore(Location& loc)
 {
-	Square& sq = grid[loc.row][loc.col];
+	Square& sq = Map::map()[loc.row][loc.col];
 	if(sq.pathScoreComplete)
 	{
 		return;
@@ -309,7 +284,7 @@ void State::calcPathScore(Location& loc)
 		for(int row = -neighbsize; row <= neighbsize; ++row)
 		{
 			const Location locRelative = Location::getLocationRelative(loc, col, row);
-			Square& sqRel = grid[locRelative.row][locRelative.col];
+			Square& sqRel = Map::map()[locRelative.row][locRelative.col];
 			if(sqRel.isFogged())
 			{
 				continue;
@@ -362,7 +337,7 @@ void State::updateVisionInformation()
 		locQueue.push(antLoc);
 
         std::vector<std::vector<bool> > visited(Map::map().rows(), std::vector<bool>(Map::map().cols(), 0));
-        grid[antLoc.row][antLoc.col].isVisible = 1;
+        Map::map()[antLoc.row][antLoc.col].isVisible = 1;
         visited[antLoc.row][antLoc.col] = 1;
 
         while(!locQueue.empty())
@@ -375,7 +350,7 @@ void State::updateVisionInformation()
                 const Location nLoc = Location::getLocation(curLoc, dir);
                 if(!visited[nLoc.row][nLoc.col] && Location::distance(antLoc, nLoc) <= viewradius)
                 {
-					Square& nSq = grid[nLoc.row][nLoc.col];
+					Square& nSq = Map::map()[nLoc.row][nLoc.col];
                     nSq.isVisible = 1;
 					nSq.isLand = !nSq.isWater;	//all visible squares, that aren't water are land and unfogged
                     locQueue.push(nLoc);
@@ -388,7 +363,7 @@ void State::updateVisionInformation()
 
 void State::addAnt(unsigned int row, unsigned int col, unsigned int antPlayerNr)
 {
-	grid[row][col].ant = antPlayerNr;
+	Map::map()[row][col].ant = antPlayerNr;
 
 	const unsigned int playerNrMe = 0;
 	Location antLoc(row, col);
@@ -513,55 +488,10 @@ bool State::isMoveALoop(const Ant& ant, const AntDirection dir)
 */
 ostream& operator<<(ostream &os, const State &state)
 {
-	printKnownMap(os, state);
-	printScoreMap(os, state);
+	Map::map().printKnownMap(os);
+	Map::map().printScoreMap(os);
     return os;
 };
-
-void printKnownMap(ostream& os, const State& state)
-{
-	for(unsigned int row=0; row < Map::map().rows(); row++)
-	{
-		for(unsigned int col=0; col < Map::map().cols(); col++)
-		{
-			if(state.grid[row][col].isWater)
-				os << '%';
-			else if(state.grid[row][col].isFood)
-				os << '*';
-			else if(state.grid[row][col].isHill)
-				os << (char)('A' + state.grid[row][col].hillPlayer);
-			else if(state.grid[row][col].ant >= 0)
-				os << (char)('a' + state.grid[row][col].ant);
-			else if(state.grid[row][col].isVisible)
-				os << '.';
-			else
-				os << '?';
-		}
-		os << endl;
-	}
-	os << endl;
-}
-
-void printScoreMap(ostream& os, const State& state)
-{
-	for(unsigned int row=0; row < Map::map().rows(); row++)
-	{
-		for(unsigned int col=0; col < Map::map().cols(); col++)
-		{
-			const int& score = state.grid[row][col].pathScore;
-			if(score < 0)
-			{
-				os << '?';
-			}
-			else
-			{
-				os << score;
-			}
-		}
-		os << endl;
-	}
-	os << endl;
-}
 
 //input function
 istream& operator>>(istream &is, State &state)
@@ -664,12 +594,12 @@ void readCurrentTurnToState(istream &is, State &state)
         if(inputType == "w") //water square
         {
             is >> row >> col;
-            state.grid[row][col].isWater = 1;
+            Map::map()[row][col].isWater = 1;
         }
         else if(inputType == "f") //food square
         {
             is >> row >> col;
-            state.grid[row][col].isFood = 1;
+            Map::map()[row][col].isFood = 1;
             state.food.push_back(Location(row, col));
         }
         else if(inputType == "a") //live ant square
@@ -680,13 +610,13 @@ void readCurrentTurnToState(istream &is, State &state)
         else if(inputType == "d") //dead ant square
         {
             is >> row >> col >> player;
-            state.grid[row][col].deadAnts.push_back(player);
+            Map::map()[row][col].deadAnts.push_back(player);
         }
         else if(inputType == "h")	//hill square
         {
             is >> row >> col >> player;
-            state.grid[row][col].isHill = 1;
-            state.grid[row][col].hillPlayer = player;
+            Map::map()[row][col].isHill = 1;
+            Map::map()[row][col].hillPlayer = player;
             if(player == 0)
                 state.myHills.push_back(Location(row, col));
             else

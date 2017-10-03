@@ -1,5 +1,6 @@
 #include "Bot.h"
 #include "Ant.h"
+#include "Map.h"
 
 using namespace std;
 
@@ -14,7 +15,6 @@ void Bot::playGame()
 {
     //reads the game parameters and sets up
     cin >> state;
-    state.setup();
     endTurn();
 
     //continues making moves while the game is not over
@@ -86,7 +86,7 @@ void Bot::issueMoves()
 		ant.setOrder(antOrder);
 		if(antOrder.getOrderType() != Order::OrderType::Idle)
 		{
-			state.makeMoveLocal(ant);
+			Map::map().makeMoveLocal(ant);
 		}
 	}
 }
