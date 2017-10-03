@@ -12,6 +12,7 @@ using namespace std;
 #include <chrono>
 #endif
 #include <sstream>
+#include "PathFinder.h"
 
 //constructor
 State::State()

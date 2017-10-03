@@ -17,6 +17,9 @@ void Bot::playGame()
     cin >> state;
     endTurn();
 
+	if(!state.m_PathFinder.Init())
+		return;
+
     //continues making moves while the game is not over
     while(cin >> state)
     {

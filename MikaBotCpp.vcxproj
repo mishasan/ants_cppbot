@@ -79,6 +79,7 @@
     <ClCompile Include="Map.cpp" />
     <ClCompile Include="MyBot.cc" />
     <ClCompile Include="Orders.cpp" />
+    <ClCompile Include="PathFinder.cpp" />
     <ClCompile Include="Square.cpp" />
     <ClCompile Include="State.cc" />
   </ItemGroup>
@@ -89,6 +90,7 @@
     <ClInclude Include="Location.h" />
     <ClInclude Include="Map.h" />
     <ClInclude Include="Orders.h" />
+    <ClInclude Include="PathFinder.h" />
     <ClInclude Include="Square.h" />
     <ClInclude Include="State.h" />
     <ClInclude Include="Timer.h" />

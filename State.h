@@ -12,6 +12,7 @@
 #include "Bug.h"
 #include "Square.h"
 #include "Location.h"
+#include "PathFinder.h"
 
 class Ant;
 
@@ -29,9 +30,10 @@ public:
 
     std::vector<Location> enemyAnts, myHills, enemyHills, food;
 	std::vector<Ant> myAnts;
+	PathFinder m_PathFinder;
 
     Timer timer;
-
+    
     /*
         Functions
     */
