@@ -31,7 +31,6 @@ public:
 	std::vector<Ant> myAnts;
 
     Timer timer;
-    Bug bug;
 
     /*
         Functions

@@ -1,7 +1,7 @@
-#ifndef BUG_H_
-#define BUG_H_
+#pragma once
 
 #include <fstream>
+#include "Timer.h"
 
 /*
     struct for debugging - this is gross but can be used pretty much like an ofstream,
@@ -14,40 +14,29 @@
         bug << "testing" << 2.0 << '%' << endl;
         bug.close();
 */
-struct Bug
+class Bug
 {
-    std::ofstream file;
+public:
+    void open(const std::string &filename);
+    void close();
+	std::ofstream& getStream() { return file; }
 
-    Bug()
-    {
+	static Bug& bug();
 
-    };
-
-    //opens the specified file
-    inline void open(const std::string &filename)
-    {
-        #ifdef _DEBUG
-            file.open(filename.c_str());
-        #endif
-    };
-
-    //closes the ofstream
-    inline void close()
-    {
-        #ifdef _DEBUG
-            file.close();
-        #endif
-    };
+private:
+	Bug() {};
+	~Bug() {};
+	std::ofstream file;
 };
 
 //output function for endl
 inline Bug& operator<<(Bug &bug, std::ostream& (*manipulator)(std::ostream&))
 {
     #ifdef _DEBUG
-        bug.file << manipulator;
+        bug.getStream() << manipulator;
     #endif
 
-    return bug;
+    return Bug::bug();
 };
 
 //output function
@@ -55,12 +44,11 @@ template <class T>
 inline Bug& operator<<(Bug &bug, const T &t)
 {
     #ifdef _DEBUG
-        bug.file << t;
+        bug.getStream() << t;
     #endif
 
     return bug;
 };
-
 /*
 DeBug: a way to hold the bot to wait for attaching the Debugger to the process.
 Needs a file DebugWait.txt with one value. 
@@ -110,5 +98,3 @@ struct DeBug
 #endif
 	};
 };
-
-#endif //BUG_H_

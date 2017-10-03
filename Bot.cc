@@ -29,8 +29,8 @@ void Bot::playGame()
         state.updateVisionInformation();
 		state.updatePathScore();
 
-		state.bug << "turn " << state.turn << ":" << endl;
-		state.bug << state << endl;
+		Bug::bug() << "turn " << state.turn << ":" << endl;
+		Bug::bug() << state << endl;
 
 		issueMoves();
         makeMoves();
@@ -102,7 +102,7 @@ void Bot::makeMoves()
 		}
 	}
 
-    state.bug << "time taken: " << state.timer.getTime() << "ms" << endl << endl;
+    Bug::bug() << "time taken: " << state.timer.getTime() << "ms" << endl << endl;
 };
 
 //finishes the turn

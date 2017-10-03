@@ -74,6 +74,7 @@
   <ItemGroup>
     <ClCompile Include="Ant.cpp" />
     <ClCompile Include="Bot.cc" />
+    <ClCompile Include="Bug.cpp" />
     <ClCompile Include="Location.cc" />
     <ClCompile Include="Map.cpp" />
     <ClCompile Include="MyBot.cc" />

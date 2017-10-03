@@ -18,13 +18,13 @@ State::State()
 {
     gameover = 0;
     turn = 0;
-    bug.open("./debug.txt");
+    Bug::bug().open("./debug.txt");
 };
 
 //deconstructor
 State::~State()
 {
-    bug.close();
+    Bug::bug().close();
 };
 
 // clears the bots ant vector and resets cells
@@ -43,10 +43,10 @@ void State::sendMoveToEngine(Ant& ant)
 	const Location& loc = ant.getLocation();
 	const AntDirection moveDirection = ant.getOrder().getMove();
     cout << "o " << loc.row << " " << loc.col << " " << moveDirection << endl;
-	bug << "o " << loc.row << " " << loc.col << " " << moveDirection << endl;
+	Bug::bug() << "o " << loc.row << " " << loc.col << " " << moveDirection << endl;
 
 #if _DEBUG
-	bug << "sendMoveToEngine " << ant.print() << endl;
+	Bug::bug() << "sendMoveToEngine " << ant.print() << endl;
 #endif
 	ant.moveByOrder();
 }
@@ -177,7 +177,7 @@ bool State::getClosestFood(Ant& ant, std::map<Location, Location>& foodOrders, L
 	//	if there is non, they have to go explore
 	if (food.empty())
 	{
-		bug << "no food found from pos" << ant.getLocation() << endl;
+		Bug::bug() << "no food found from pos" << ant.getLocation() << endl;
 		return false;
 	}
 
@@ -203,7 +203,7 @@ bool State::getClosestFood(Ant& ant, std::map<Location, Location>& foodOrders, L
 	
 	if(itClosestFood == food.end())
 	{
-		bug << "no food found thats close enough to ant at " << locAnt << endl;
+		Bug::bug() << "no food found thats close enough to ant at " << locAnt << endl;
 		return false;
 	}
 	else
