@@ -1,7 +1,7 @@
-#ifndef SQUARE_H_
-#define SQUARE_H_
+#pragma once
 
 #include <vector>
+#include <iostream>
 
 /*
     struct for representing a square in the grid.
@@ -17,28 +17,14 @@ struct Square
 	int pathScore;
 	bool pathScoreComplete;
 
-    Square()
-    {
-        isVisible = isWater = isHill = isFood = isLand = false;
-        ant = hillPlayer = -1;
-		pathScore = PATHSCORE_UNKNOWN;
-		pathScoreComplete = false;
-    };
+    Square();
 
     //resets the information for the square except water information
-    void reset()
-    {
-        isVisible = false;
-        isHill = false;
-        isFood = false;
-        ant = hillPlayer = -1;
-        deadAnts.clear();
-    };
+    void reset();
 
-	bool isFogged()
-	{
-		return !(isWater || isLand);
-	}
+	bool isFogged();
+
+	char toChar() const;
 };
 
-#endif //SQUARE_H_
+std::ostream& operator<<(std::ostream &os, const Square& sq);

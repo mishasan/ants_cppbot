@@ -79,6 +79,7 @@
     <ClCompile Include="Map.cpp" />
     <ClCompile Include="MyBot.cc" />
     <ClCompile Include="Orders.cpp" />
+    <ClCompile Include="Square.cpp" />
     <ClCompile Include="State.cc" />
   </ItemGroup>
   <ItemGroup>

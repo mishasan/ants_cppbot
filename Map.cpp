@@ -53,18 +53,7 @@ void Map::printKnownMap(ostream& os)
 	{
 		for(unsigned int col=0; col < Map::map().cols(); col++)
 		{
-			if(m_grid[row][col].isWater)
-				os << '%';
-			else if(m_grid[row][col].isFood)
-				os << '*';
-			else if(m_grid[row][col].isHill)
-				os << (char)('A' + m_grid[row][col].hillPlayer);
-			else if(m_grid[row][col].ant >= 0)
-				os << (char)('a' + m_grid[row][col].ant);
-			else if(m_grid[row][col].isVisible)
-				os << '.';
-			else
-				os << '?';
+			os << Map::map()[row][col];
 		}
 		os << endl;
 	}
