@@ -38,6 +38,7 @@ struct Location
 
 	static double distance(const Location &loc1, const Location &loc2);
 	static Location getLocation(const Location &loc, AntDirection direction);
+	static Location getLocation(int row, int col);
 	static Location getLocationRelative(const Location &loc, int diffRow, int diffCol);
 	static AntDirection getCounterDirection(AntDirection dir);
 };

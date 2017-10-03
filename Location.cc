@@ -37,6 +37,12 @@ Location Location::getLocation(const Location &loc, AntDirection direction)
 					 (loc.col + DIRECTIONS[(int)direction][1] + Map::map().cols()) % Map::map().cols() );
 };
 
+Location Location::getLocation(int row, int col)
+{
+	return Location( (row + Map::map().rows()) % Map::map().rows(),
+					 (col + Map::map().cols()) % Map::map().cols() );
+}
+
 //	return the new location relative to the location, edges wrapped
 Location Location::getLocationRelative(const Location &loc, int diffRow, int diffCol)
 {
