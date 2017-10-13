@@ -45,49 +45,68 @@ void Bot::playGame()
 //	moves ants on local grid, it will be sent to the engine later
 void Bot::issueMoves()
 {
-	std::map<Location, Location> foodOrders;
-	state.collectFoodOrders(foodOrders);
+	state.resetFoodOrders();
 
-	//picks out moves for each ant
+	//picks out food moves for each ant
 	for(auto& ant : state.myAnts)
 	{
 		Order antOrder;
-
+		
 		//	try to place a food order for this ant
 		Location locClosestFood;
-		bool bFoundCloseFood = state.getClosestFood(ant, foodOrders, locClosestFood);
+		bool bFoundCloseFood = state.getClosestFood(ant, locClosestFood); //TODO: check real distance?
 		if(bFoundCloseFood)
 		{
-			auto existingFoodOrder = foodOrders.find(locClosestFood);
-			if(existingFoodOrder == foodOrders.end())
+			AntDirection dirFood = AntDirection::N;
+			bool bFoundGoodDirection = state.getAMovingDirectionTo(ant, locClosestFood, dirFood);
+			if(bFoundGoodDirection)
 			{
-				AntDirection dirFood = AntDirection::N;
-				bool bFoundGoodDirection = state.getAMovingDirectionTo(ant, locClosestFood, dirFood);
-				if(bFoundGoodDirection)
+				//	change Ordertype for Ant going for this food, but keep its movement (was already done locally)
+				Ant *pAntFurtherAway = state.getCollectingAntFor(locClosestFood);
+				if(pAntFurtherAway)
 				{
-					foodOrders[locClosestFood] = ant.getLocation();
-					antOrder.setOrderType(Order::OrderType::Food);
-					antOrder.setMove(dirFood);
-					antOrder.setTarget(locClosestFood);
+					Order order = pAntFurtherAway->getOrder();
+					order.setOrderType(Order::OrderType::IdleActive);
+					pAntFurtherAway->setOrder(order);
 				}
-			}
-		}
 
-		//	no food order means, go explore
-		if(antOrder.getOrderType() == Order::OrderType::Idle)
-		{
-			AntDirection dir = AntDirection::N;
-			if(state.getAnExploringDirection(ant, dir))
-			//if(state.getARandomDirectionFrom(locAnt, dir))
-			{
-				antOrder.setOrderType(Order::OrderType::Explore);
-				antOrder.setMove(dir);
-				antOrder.setTarget(Location::getLocation(ant.getLocation(), dir));
+				//	send the Ant to this food
+				state.setFoodOrderFor(ant, locClosestFood);
+				antOrder.setOrderType(Order::OrderType::Food);
+				antOrder.setMove(dirFood);
+				antOrder.setTarget(locClosestFood);
 			}
 		}
 
 		ant.setOrder(antOrder);
 		if(antOrder.getOrderType() != Order::OrderType::Idle)
+		{
+			Map::map().makeMoveLocal(ant);
+		}
+	}
+	
+
+	for(auto& ant : state.myAnts)
+	{
+		Order antOrder = ant.getOrder();
+
+		//	no food order means, go explore
+		if(antOrder.getOrderType() != Order::OrderType::Idle)
+		{
+			continue;
+		}
+
+		AntDirection dir = AntDirection::N;
+		if(state.getAnExploringDirection(ant, dir))
+		//if(state.getARandomDirectionFrom(locAnt, dir))
+		{
+			antOrder.setOrderType(Order::OrderType::Explore);
+			antOrder.setMove(dir);
+			antOrder.setTarget(Location::getLocation(ant.getLocation(), dir));
+		}
+
+		ant.setOrder(antOrder);
+		if(ant.getOrder().getOrderType() != Order::OrderType::Idle)
 		{
 			Map::map().makeMoveLocal(ant);
 		}

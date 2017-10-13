@@ -53,32 +53,22 @@ void State::sendMoveToEngine(Ant& ant)
 }
 
 bool State::getAMovingDirectionTo(const Ant &ant, const Location &locTo, AntDirection& aDirection)
-{	
-	//	collect the available neighboring location by distance
-	map<double, AntDirection> possibleDirections;
-	for(auto dirByDist : AllAntDirections)
-	{
-		const Location locTestDirection = Location::getLocation(ant.getLocation(), dirByDist);
-		if(!isTargetPositionFreeToGo(locTestDirection))
-		{
-			continue;
-		}
+{
+	vector<AntDirection> path;
+	if(!m_PathFinder.findPath(ant.getLocation(), locTo, path))
+		return false;
 
-		const double dDist = Location::distance(locTestDirection, locTo);
-		possibleDirections[dDist] = dirByDist;
+	AntDirection dNextMove = *path.begin();
+
+	const Location locTestDirection = Location::getLocation(ant.getLocation(), dNextMove);
+	if(!isTargetPositionFreeToGo(locTestDirection))
+	{
+		return false;
 	}
 
-	//	prefer the closest location to go to, but try to pick another one, if that means going backwards
-	for(auto dirByDist : possibleDirections)
-	{
-		aDirection = dirByDist.second;
-		if(!isMoveALoop(ant, aDirection))
-		{
-			break;
-		}
-	}
+	aDirection = dNextMove;
 
-	return !possibleDirections.empty();
+	return true;
 }
 
 //	returns true and a random direction with a valid target location, or false
@@ -171,7 +161,7 @@ bool State::isThisGoingBackwards(const Ant& ant, const AntDirection dir) const
 	return ant.getPreviousMove(dirPreviousMove) && dir == Location::getCounterDirection(dirPreviousMove);
 }
 
-bool State::getClosestFood(Ant& ant, std::map<Location, Location>& foodOrders, Location &locClosestFood)
+bool State::getClosestFood(Ant& ant, Location &locClosestFood)
 {
 	const Location& locAnt = ant.getLocation();
 
@@ -187,19 +177,20 @@ bool State::getClosestFood(Ant& ant, std::map<Location, Location>& foodOrders, L
 	std::vector<Location>::iterator itClosestFood = food.end();
 	for(std::vector<Location>::iterator itFood = food.begin(); itFood != food.end(); ++itFood)
 	{
-		//	TODO: use path finding mechanism too find true distance
+		//	TODO: use path finding mechanism to find true distance
 		const double dDistToAnt = Location::distance(locAnt, *itFood);
 
-		//	if there is an order for another Ant thats closer to that food, its taken care of
-		if(isAnotherAntCloserToThisFood(foodOrders, *itFood, dDistToAnt))
+		//	only go to food thats not too far away
+		if(dDistToAnt > dMinDist)
 			continue;
 
-		//	only go to food thats not too far away and find closest one
-		if(dDistToAnt < dMinDist)
-		{
-			itClosestFood = itFood;
-			dMinDist = dDistToAnt;
-		}
+		//	if there is an order for another Ant thats closer to that food, its taken care of
+		if(isAnotherAntCloserToThisFood(*itFood, dDistToAnt))
+			continue;
+
+		//	remember closest food
+		itClosestFood = itFood;
+		dMinDist = dDistToAnt;
 	}
 	
 	if(itClosestFood == food.end())
@@ -214,10 +205,11 @@ bool State::getClosestFood(Ant& ant, std::map<Location, Location>& foodOrders, L
 	}
 }
 
-bool State::isAnotherAntCloserToThisFood(map<Location, Location> &foodOrders, const Location& locFood, double dDistToAnt)
+//	checks if an ant is sent to that food already and if so, is that one is closer
+bool State::isAnotherAntCloserToThisFood(const Location& locFood, double dDistToAnt)
 {
-	auto existingFoodOrder = foodOrders.find(locFood);
-	if(existingFoodOrder != foodOrders.end())
+	auto existingFoodOrder = m_foodOrders.find(locFood);
+	if(existingFoodOrder != m_foodOrders.end())
 	{
 		const Location& otherAntForFood = existingFoodOrder->second;
 		double dDistOtherAnt = Location::distance(otherAntForFood, locFood);
@@ -419,7 +411,7 @@ void State::updateAntList()
 
 void State::collectFoodOrders(std::map<Location, Location>& foodOrders)
 {
-	for(auto ant : myAnts)
+	for(const auto& ant : myAnts)
 	{
 		const Order& order = ant.getLastOrder();
 		if(order.getOrderType() == Order::OrderType::Food)
@@ -428,6 +420,29 @@ void State::collectFoodOrders(std::map<Location, Location>& foodOrders)
 			foodOrders[foodLoc] = ant.getLocation();
 		}
 	}
+}
+
+void State::setFoodOrderFor(const Ant& ant, const Location& locFood)
+{
+	m_foodOrders[locFood] = ant.getLocation();
+}
+
+Ant* State::getCollectingAntFor(Location& locFood)
+{
+	auto existingFoodOrder = m_foodOrders.find(locFood);
+	if(existingFoodOrder != m_foodOrders.end())
+	{
+		const Location& antLoc = existingFoodOrder->second;
+		for(auto& ant : myAnts)
+		{
+			if(ant.getLocation() == antLoc)
+			{
+				return &ant;
+			}
+		}
+	}
+
+	return nullptr;
 }
 
 //	checks a movement if it is making the ant moving in circles
