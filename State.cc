@@ -119,9 +119,7 @@ bool State::getAnExploringDirection(Ant& ant, AntDirection& dirExploreTo)
 		itScoreHighToLow != mapDirByScore.rend(); ++itScoreHighToLow)
 	{
 		AntDirection dir = itScoreHighToLow->second;
-#ifdef _DEBUG
-		int score = itScoreHighToLow->first;
-#endif
+
 		//	TODO: for now the ant is not allowed to go back where it came from -> could end up in trapped ants
 		//if(isThisGoingBackwards(ant, dir))
 		if(isMoveALoop(ant, dir))
@@ -173,6 +171,7 @@ bool State::getClosestFood(Ant& ant, Location &locClosestFood)
 	}
 
 	//	find close food sorted by distance to Location
+	const double dMaxDistanceToFood = 2 * viewradius;
 	double dMinDist = std::numeric_limits<double>::max();
 	std::vector<Location>::iterator itClosestFood = food.end();
 	for(std::vector<Location>::iterator itFood = food.begin(); itFood != food.end(); ++itFood)
@@ -181,7 +180,7 @@ bool State::getClosestFood(Ant& ant, Location &locClosestFood)
 		const double dDistToAnt = Location::distance(locAnt, *itFood);
 
 		//	only go to food thats not too far away
-		if(dDistToAnt > dMinDist)
+		if(dDistToAnt > dMaxDistanceToFood)
 			continue;
 
 		//	if there is an order for another Ant thats closer to that food, its taken care of
@@ -189,8 +188,11 @@ bool State::getClosestFood(Ant& ant, Location &locClosestFood)
 			continue;
 
 		//	remember closest food
-		itClosestFood = itFood;
-		dMinDist = dDistToAnt;
+		if(dDistToAnt < dMinDist)
+		{
+			itClosestFood = itFood;
+			dMinDist = dDistToAnt;
+		}
 	}
 	
 	if(itClosestFood == food.end())
