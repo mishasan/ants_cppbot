@@ -65,8 +65,7 @@ public:
 	void markPreviousAnts();
 	void updateAntList();
 
-	void collectFoodOrders(std::map<Location, Location>& foodOrders);
-	void setFoodOrderFor(const Ant& ant, const Location& locFood);
+	void sendAntToFood(const Ant& ant, const Location& locFood);
 	Ant* getCollectingAntFor(Location& locFood);
 	void resetFoodOrders() { m_foodOrders.clear(); }
 

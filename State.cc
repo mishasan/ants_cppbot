@@ -226,7 +226,8 @@ bool State::isAnotherAntCloserToThisFood(const Location& locFood, double dDistTo
 void State::updatePathScore()
 {
 	//	TODO: use spread alg to just cover areas which are visible to update that map
-	
+	//	TODO: count unfogged squares, if everything is uncovered, stop updating path score
+
 	for(unsigned int row = 0; row < Map::map().rows(); ++row)
 	{
 		for(unsigned int col = 0; col < Map::map().cols(); ++col)
@@ -409,20 +410,8 @@ void State::updateAntList()
 	// TODO: collect invalid ants as dead ants for gathering information about fights or movement errors
 }
 
-void State::collectFoodOrders(std::map<Location, Location>& foodOrders)
-{
-	for(const auto& ant : myAnts)
-	{
-		const Order& order = ant.getLastOrder();
-		if(order.getOrderType() == Order::OrderType::Food)
-		{
-			const Location& foodLoc = order.getTarget();
-			foodOrders[foodLoc] = ant.getLocation();
-		}
-	}
-}
 
-void State::setFoodOrderFor(const Ant& ant, const Location& locFood)
+void State::sendAntToFood(const Ant& ant, const Location& locFood)
 {
 	m_foodOrders[locFood] = ant.getLocation();
 }

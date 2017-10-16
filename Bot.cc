@@ -71,7 +71,7 @@ void Bot::issueMoves()
 				}
 
 				//	send the Ant to this food
-				state.setFoodOrderFor(ant, locClosestFood);
+				state.sendAntToFood(ant, locClosestFood);
 				antOrder.setOrderType(Order::OrderType::Food);
 				antOrder.setMove(dirFood);
 				antOrder.setTarget(locClosestFood);
@@ -85,12 +85,11 @@ void Bot::issueMoves()
 		}
 	}
 	
-
 	for(auto& ant : state.myAnts)
 	{
 		Order antOrder = ant.getOrder();
 
-		//	no food order means, go explore
+		//	only send exploring, if there is no other order
 		if(antOrder.getOrderType() != Order::OrderType::Idle)
 		{
 			continue;
