@@ -47,6 +47,33 @@ void Map::makeMoveLocal(Ant& ant)
 	m_grid[oldLoc.row][oldLoc.col].ant = -1;
 }
 
+//	true, if movement could be reverted
+bool Map::revertLocalMove(Ant& ant)
+{
+	const Order& order = ant.getOrder();
+
+	//	only a moving Order can be reversed
+	if(order.getOrderType() == Order::OrderType::Idle)
+		return true;
+
+	//	check current move in Orders of Ant, determine reverse move and get old Location
+	Location newLoc = ant.getNewLocation();
+	AntDirection d = order.getMove();
+	AntDirection dOpposite = Location::getCounterDirection(d);
+	Location oldLoc = Location::getLocation(newLoc, d);
+
+	//	check if an Ant already moved (locally) on old Location
+	int antOnOldLoc = m_grid[oldLoc.row][oldLoc.col].ant;
+	if(antOnOldLoc != -1)
+		return false;
+
+	//	put Ant back to old Location
+	m_grid[oldLoc.row][oldLoc.col].ant = m_grid[newLoc.row][newLoc.col].ant;
+	m_grid[newLoc.row][newLoc.col].ant = -1;
+
+	return true;
+}
+
 void Map::printKnownMap(ostream& os)
 {
 	for(unsigned int row=0; row < Map::map().rows(); row++)

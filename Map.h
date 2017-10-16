@@ -18,6 +18,7 @@ public:
 
 	void resetCellsToLand();
 	void makeMoveLocal(Ant& ant);
+	bool revertLocalMove(Ant& ant);
 
 	std::vector<Square>& operator[](const size_t& row)
 	{

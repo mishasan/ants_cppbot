@@ -65,9 +65,12 @@ void Bot::issueMoves()
 				Ant *pAntFurtherAway = state.getCollectingAntFor(locClosestFood);
 				if(pAntFurtherAway)
 				{
-					Order order = pAntFurtherAway->getOrder();
-					order.setOrderType(Order::OrderType::IdleActive);
-					pAntFurtherAway->setOrder(order);
+					if(!Map::map().revertLocalMove(*pAntFurtherAway))
+					{
+						Order orderGoAnyway(pAntFurtherAway->getOrder());
+						orderGoAnyway.setOrderType(Order::OrderType::IdleActive);
+						pAntFurtherAway->setOrder(orderGoAnyway);
+					}
 				}
 
 				//	send the Ant to this food
