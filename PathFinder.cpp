@@ -96,7 +96,7 @@ bool PathFinder::findPath(const Location& locFrom, const Location& locTo, std::v
 		for(auto d : AllAntDirections)
 		{
 			Location locChild(Location::getLocation(nodeParent.getLocation(), d));
-			if(!(Map::map()(locChild).isWater || m_closedNodesMap[At(locChild)] == 1))
+			if(Map::map()(locChild).isLand && m_closedNodesMap[At(locChild)] != 1)
 			{
 				// generate a child node
 				Node nodeChild(locChild, nodeParent.getTraveledDistance(), nodeParent.getPriority());
