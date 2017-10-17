@@ -26,9 +26,8 @@ namespace U1_TestPathFinder
 			{
 				for(unsigned int y = 0; y < nMapSize; y++)
 				{
-					m[x][y].isLand = 1;
-					m[x][y].isWater = 0;
-					m[x][y].isVisible = 1;
+					m[x][y].SetToLand();
+					m[x][y].SetVisible();
 				}
 			}
 		}
@@ -40,8 +39,8 @@ namespace U1_TestPathFinder
 			m.setDimensions(nMapSize, nMapSize);
 			for(unsigned int isWater = 2; isWater < nMapSize - 2; isWater++)
 			{
-				m[isWater][nMapSize/2].isWater = 1;
-				m[nMapSize/2][isWater].isWater = 1;
+				m[isWater][nMapSize/2].SetToWater();
+				m[nMapSize/2][isWater].SetToWater();
 			}
 		}
 
@@ -94,7 +93,7 @@ namespace U1_TestPathFinder
 			Location locTestWater(1,2);
 
 			Square& sq = Map::map()(locTestWater);
-			sq.isWater = true;
+			sq.SetToWater();
 			Square& sqSame = Map::map()[1][2];
 			Assert::IsTrue(&sq == &sqSame);
 		}
@@ -112,17 +111,17 @@ namespace U1_TestPathFinder
 			//	check pathfind-algorithm
 			{
 				Location locFrom(9, 9), locTo(14, 15);
-				Assert::IsFalse(Map::map()(locFrom).isWater);
-				Assert::IsFalse(Map::map()(locTo).isWater);
+				Assert::IsFalse(Map::map()(locFrom).IsWater());
+				Assert::IsFalse(Map::map()(locTo).IsWater());
 				std::vector<AntDirection> path;
 				bool bFoundPath = pf.findPath(locFrom, locTo, path);
 				Assert::IsTrue(bFoundPath);
-				Bug::bug() << "Testcase: Easy around an edge. From" << locFrom << " to " << locTo << std::endl;
+				Bug::bug() << "Testcase: Easy around an edge. From " << locFrom << " to " << locTo << std::endl;
 				Location locTestRun(locFrom);
 				std::stringstream ss;
 				for(auto d : path)
 				{
-					Assert::IsFalse(Map::map()(locTestRun).isWater);
+					Assert::IsFalse(Map::map()(locTestRun).IsWater());
 					Bug::bug() << locTestRun << " -> ";
 					locTestRun = Location::getLocation(locTestRun, d);
 					ss << d;
@@ -132,6 +131,41 @@ namespace U1_TestPathFinder
 
 				pf.printPathAndMap(locFrom, path);
 				Bug::bug() << "Path (From Begin to End): " << ss.str() << std::endl;
+			}
+		}
+
+		TEST_METHOD(TestUnknownMapParts)
+		{
+			Bug::bug().open("Test_Debug_TestUnknownMapParts.txt");
+
+			prepareMap_Empty();
+
+			//	surround Startposition with water
+			Location locFrom(2, 2);
+			Map::map()[1][1].SetToWater();
+			Map::map()[1][2].SetToWater();
+			Map::map()[1][3].SetToWater();
+			
+			Map::map()[3][1].SetToWater();
+			Map::map()[3][2].SetToWater();
+			Map::map()[3][3].SetToWater();
+
+			Map::map()[2][1].SetToWater();
+			Map::map()[2][3].SetToWater();
+
+			PathFinder pf;
+			pf.Init();
+
+			//	check pathfind-algorithm
+			{
+				Location locTo(5, 5);
+				Assert::IsFalse(Map::map()(locFrom).IsWater());
+				Assert::IsFalse(Map::map()(locTo).IsWater());
+				std::vector<AntDirection> path;
+				bool bFoundPath = pf.findPath(locFrom, locTo, path);
+				Assert::IsFalse(bFoundPath);
+				Bug::bug() << "Testcase: Surrounded by Water. From " << locFrom << " to " << locTo << std::endl;
+				pf.printPathAndMap(locFrom, path);
 			}
 		}
 

@@ -96,7 +96,7 @@ bool PathFinder::findPath(const Location& locFrom, const Location& locTo, std::v
 		for(auto d : AllAntDirections)
 		{
 			Location locChild(Location::getLocation(nodeParent.getLocation(), d));
-			if(Map::map()(locChild).isLand && m_closedNodesMap[At(locChild)] != 1)
+			if(Map::map()(locChild).IsLand() && m_closedNodesMap[At(locChild)] != 1)
 			{
 				// generate a child node
 				Node nodeChild(locChild, nodeParent.getTraveledDistance(), nodeParent.getPriority());
@@ -161,7 +161,7 @@ void PathFinder::printDirMap() const
 		Bug::bug() << std::setw(3) << std::fixed << r << "   ";
 		for (int c = 0; c < m_cols; c++)
 		{
-			const bool bIsWater = Map::map()[r][c].isWater;
+			const bool bIsWater = Map::map()[r][c].IsWater();
 			if(bIsWater)
 				Bug::bug() << "%";
 			else

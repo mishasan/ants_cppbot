@@ -33,7 +33,7 @@ void Map::resetCellsToLand()
 {
 	for(unsigned int row = 0; row < Map::map().rows(); row++)
 		for(unsigned int col = 0; col < Map::map().cols(); col++)
-			if(!m_grid[row][col].isWater)
+			if(!m_grid[row][col].IsWater())
 				m_grid[row][col].reset();
 }
 

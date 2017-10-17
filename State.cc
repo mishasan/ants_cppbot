@@ -139,7 +139,7 @@ bool State::getAnExploringDirection(Ant& ant, AntDirection& dirExploreTo)
 bool State::isTargetPositionFreeToGo(const Location& locTo)
 {
 	const Square& sqTo = Map::map()[locTo.row][locTo.col];
-	if(sqTo.isWater || isAntOnPosition(locTo) || sqTo.isHill)
+	if(sqTo.IsWater() || isAntOnPosition(locTo) || sqTo.IsHill())
 	{
 		return false;
 	}
@@ -258,7 +258,7 @@ void State::calcPathScore(Location& loc)
 	}
 
 	//	cant move on water, give lowest score right away
-	if(sq.isWater)
+	if(sq.IsWater())
 	{
 		sq.pathScore = 0;
 		sq.pathScoreComplete = true;
@@ -285,7 +285,7 @@ void State::calcPathScore(Location& loc)
 			}
 
 			//	count water and land squares in neighborhood
-			if(sqRel.isWater)
+			if(sqRel.IsWater())
 			{
 				iWaterSquaresTotal++;
 				if((abs(col) < 2) && (abs(row) < 2))
@@ -293,7 +293,7 @@ void State::calcPathScore(Location& loc)
 					iWaterDirectNgh++;
 				}
 			}
-			else if(sqRel.isLand)
+			else if(sqRel.IsLand())
 			{
 				iLandSquaresTotal++;
 			}
@@ -329,7 +329,7 @@ void State::updateVisionInformation()
 		locQueue.push(antLoc);
 
         std::vector<std::vector<bool> > visited(Map::map().rows(), std::vector<bool>(Map::map().cols(), 0));
-        Map::map()[antLoc.row][antLoc.col].isVisible = 1;
+        Map::map()[antLoc.row][antLoc.col].SetVisible();
         visited[antLoc.row][antLoc.col] = 1;
 
         while(!locQueue.empty())
@@ -343,8 +343,8 @@ void State::updateVisionInformation()
                 if(!visited[nLoc.row][nLoc.col] && Location::distance(antLoc, nLoc) <= viewradius)
                 {
 					Square& nSq = Map::map()[nLoc.row][nLoc.col];
-                    nSq.isVisible = 1;
-					nSq.isLand = !nSq.isWater;	//all visible squares, that aren't water are land and unfogged
+                    nSq.SetVisible();
+					nSq.SetToLand(!nSq.IsWater());	//all visible squares, that aren't water are land and unfogged
                     locQueue.push(nLoc);
                 }
                 visited[nLoc.row][nLoc.col] = 1;
@@ -597,12 +597,12 @@ void readCurrentTurnToState(istream &is, State &state)
         if(inputType == "w") //water square
         {
             is >> row >> col;
-            Map::map()[row][col].isWater = 1;
+            Map::map()[row][col].SetToWater();
         }
         else if(inputType == "f") //food square
         {
             is >> row >> col;
-            Map::map()[row][col].isFood = 1;
+            Map::map()[row][col].SetFood();
             state.food.push_back(Location(row, col));
         }
         else if(inputType == "a") //live ant square
@@ -618,8 +618,7 @@ void readCurrentTurnToState(istream &is, State &state)
         else if(inputType == "h")	//hill square
         {
             is >> row >> col >> player;
-            Map::map()[row][col].isHill = 1;
-            Map::map()[row][col].hillPlayer = player;
+            Map::map()[row][col].SetToHill(player);
             if(player == 0)
                 state.myHills.push_back(Location(row, col));
             else
