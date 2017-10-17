@@ -1,6 +1,7 @@
 #include "Map.h"
 #include "Ant.h"
 #include "Square.h"
+#include "Bug.h"
 
 using namespace std;
 
@@ -41,7 +42,7 @@ void Map::makeMoveLocal(Ant& ant)
 {
 	const Location& oldLoc = ant.getLocation();
 	Location newLoc = ant.getNewLocation();
-	//bug << "makeMoveLocal: From " << oldLoc << " to " << newLoc << " Order: " << ant.getOrder().print() << endl;
+	Bug::bug() << "makeMoveLocal: From " << oldLoc << " to " << newLoc << std::endl;
 
 	m_grid[newLoc.row][newLoc.col].ant = m_grid[oldLoc.row][oldLoc.col].ant;
 	m_grid[oldLoc.row][oldLoc.col].ant = -1;
@@ -69,6 +70,8 @@ bool Map::revertLocalMove(Ant& ant)
 	//	put Ant back to old Location
 	m_grid[oldLoc.row][oldLoc.col].ant = m_grid[newLoc.row][newLoc.col].ant;
 	m_grid[newLoc.row][newLoc.col].ant = -1;
+
+	Bug::bug() << "makeMoveLocal Revert: From (new): " << newLoc << " back to (old): " << oldLoc << std::endl;
 
 	return true;
 }
