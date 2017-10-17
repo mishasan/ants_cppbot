@@ -58,9 +58,8 @@ bool Map::revertLocalMove(Ant& ant)
 
 	//	check current move in Orders of Ant, determine reverse move and get old Location
 	Location newLoc = ant.getNewLocation();
-	AntDirection d = order.getMove();
-	AntDirection dOpposite = Location::getCounterDirection(d);
-	Location oldLoc = Location::getLocation(newLoc, d);
+	AntDirection dOpposite = Location::getCounterDirection(order.getMove());
+	Location oldLoc = Location::getLocation(newLoc, dOpposite);
 
 	//	check if an Ant already moved (locally) on old Location
 	int antOnOldLoc = m_grid[oldLoc.row][oldLoc.col].ant;
