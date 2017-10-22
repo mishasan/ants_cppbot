@@ -183,10 +183,6 @@ bool State::getClosestFood(Ant& ant, Location &locClosestFood)
 		if(dDistToAnt > dMaxDistanceToFood)
 			continue;
 
-		//	if there is an order for another Ant thats closer to that food, its taken care of
-		if(isAnotherAntCloserToThisFood(*itFood, dDistToAnt))
-			continue;
-
 		//	remember closest food
 		if(dDistToAnt < dMinDist)
 		{
@@ -205,23 +201,6 @@ bool State::getClosestFood(Ant& ant, Location &locClosestFood)
 		locClosestFood = *itClosestFood;
 		return true;
 	}
-}
-
-//	checks if an ant is sent to that food already and if so, is that one is closer
-bool State::isAnotherAntCloserToThisFood(const Location& locFood, double dDistToAnt)
-{
-	auto existingFoodOrder = m_foodOrders.find(locFood);
-	if(existingFoodOrder != m_foodOrders.end())
-	{
-		const Location& otherAntForFood = existingFoodOrder->second;
-		double dDistOtherAnt = Location::distance(otherAntForFood, locFood);
-		if(dDistOtherAnt < dDistToAnt)
-		{
-			return true;
-		}
-	}
-
-	return false;
 }
 
 //	calculating a score for each Square in the map representing closeness to water [0...1] 0 very close, 1 far away
@@ -410,30 +389,6 @@ void State::updateAntList()
 	myAnts.erase(std::remove_if(myAnts.begin(), myAnts.end(), [] (Ant& ant) { return !ant.isValid(); }), myAnts.end());
 
 	// TODO: collect invalid ants as dead ants for gathering information about fights or movement errors
-}
-
-
-void State::sendAntToFood(const Ant& ant, const Location& locFood)
-{
-	m_foodOrders[locFood] = ant.getLocation();
-}
-
-Ant* State::getCollectingAntFor(Location& locFood)
-{
-	auto existingFoodOrder = m_foodOrders.find(locFood);
-	if(existingFoodOrder != m_foodOrders.end())
-	{
-		const Location& antLoc = existingFoodOrder->second;
-		for(auto& ant : myAnts)
-		{
-			if(ant.getLocation() == antLoc)
-			{
-				return &ant;
-			}
-		}
-	}
-
-	return nullptr;
 }
 
 //	checks a movement if it is making the ant moving in circles

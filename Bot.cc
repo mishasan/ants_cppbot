@@ -4,16 +4,10 @@
 
 using namespace std;
 
-//constructor
-Bot::Bot()
-{
-
-};
-
-//plays a single game of Ants.
+//	plays a single game of Ants.
 void Bot::playGame()
 {
-    //reads the game parameters and sets up
+    //reads the game parameters and sets the internal state up
     cin >> state;
     endTurn();
 
@@ -39,55 +33,112 @@ void Bot::playGame()
         makeMoves();
         endTurn();
     }
-};
+}
 
 //	figure out what each ant is going to do, create orders and store them
 //	moves ants on local grid, it will be sent to the engine later
 void Bot::issueMoves()
 {
-	state.resetFoodOrders();
+	issueFood();
+	
+	issueExploring();
+}
 
-	//picks out food moves for each ant
+//	sends moves of Ants for this turn to engine
+void Bot::makeMoves()
+{
 	for(auto& ant : state.myAnts)
 	{
-		Order antOrder;
-		
-		//	try to place a food order for this ant
+		if(ant.getOrder().getOrderType() != Order::OrderType::Idle)
+		{
+			state.sendMoveToEngine(ant);
+		}
+	}
+
+    Bug::bug() << "time taken: " << state.timer.getTime() << "ms" << endl << endl;
+}
+
+//	finishes the turn
+void Bot::endTurn()
+{
+    if(state.turn > 0)
+    {
+		state.reset();
+		state.markPreviousAnts();
+	}
+    state.turn++;
+
+    cout << "go" << endl;
+}
+
+//	checks available food and sends Ants to each if reasonable 
+void Bot::issueFood()
+{
+	std::map<Location, Location> foodOrders;
+
+	//	find closest Ant to each food
+	for(auto& ant : state.myAnts)
+	{
 		Location locClosestFood;
 		bool bFoundCloseFood = state.getClosestFood(ant, locClosestFood); //TODO: check real distance?
 		if(bFoundCloseFood)
 		{
-			AntDirection dirFood = AntDirection::N;
-			bool bFoundGoodDirection = state.getAMovingDirectionTo(ant, locClosestFood, dirFood);
-			if(bFoundGoodDirection)
-			{
-				//	change Ordertype for Ant going for this food, but keep its movement (was already done locally)
-				Ant *pAntFurtherAway = state.getCollectingAntFor(locClosestFood);
-				if(pAntFurtherAway)
-				{
-					if(!Map::map().revertLocalMove(*pAntFurtherAway))
-					{
-						Order orderGoAnyway(pAntFurtherAway->getOrder());
-						orderGoAnyway.setOrderType(Order::OrderType::IdleActive);
-						pAntFurtherAway->setOrder(orderGoAnyway);
-					}
-				}
-
-				//	send the Ant to this food
-				state.sendAntToFood(ant, locClosestFood);
-				antOrder.setOrderType(Order::OrderType::Food);
-				antOrder.setMove(dirFood);
-				antOrder.setTarget(locClosestFood);
-			}
-		}
-
-		ant.setOrder(antOrder);
-		if(antOrder.getOrderType() != Order::OrderType::Idle)
-		{
-			Map::map().makeMoveLocal(ant);
+			foodOrders[locClosestFood] = ant.getLocation();
 		}
 	}
-	
+
+	//	find best move to food for closest Ant
+	for(const auto& foodOrder : foodOrders)
+	{
+		//	only food with an Ant close enough will be taken care of
+		const Location& locFood = foodOrder.first;
+		Ant *pAnt = getCollectingAntFor(foodOrders, locFood);
+		if(pAnt == nullptr)
+			continue;
+
+		//	find best move
+		Order antOrder;
+		AntDirection dirFood = AntDirection::N;
+		bool bFoundGoodDirection = state.getAMovingDirectionTo(*pAnt, locFood, dirFood);
+		if(bFoundGoodDirection)
+		{
+			//	send the Ant to this food
+			antOrder.setOrderType(Order::OrderType::Food);
+			antOrder.setMove(dirFood);
+			antOrder.setTarget(locFood);
+		}
+
+		//	move Ant locally
+		pAnt->setOrder(antOrder);
+		if(antOrder.getOrderType() != Order::OrderType::Idle)
+		{
+			Map::map().makeMoveLocal(*pAnt);
+		}
+	}
+}
+
+//	checks the food local orders and returns the (one) Ant which is going for this food
+//	nullptr, if there is no Ant going for this food
+Ant* Bot::getCollectingAntFor(std::map<Location, Location>& m_foodOrders, const Location& locFood)
+{
+	const auto& existingFoodOrder = m_foodOrders.find(locFood);
+	if(existingFoodOrder != m_foodOrders.end())
+	{
+		const Location& antLoc = existingFoodOrder->second;
+		for(auto& ant : state.myAnts)
+		{
+			if(ant.getLocation() == antLoc)
+			{
+				return &ant;
+			}
+		}
+	}
+
+	return nullptr;
+}
+
+void Bot::issueExploring()
+{
 	for(auto& ant : state.myAnts)
 	{
 		Order antOrder = ant.getOrder();
@@ -100,7 +151,7 @@ void Bot::issueMoves()
 
 		AntDirection dir = AntDirection::N;
 		if(state.getAnExploringDirection(ant, dir))
-		//if(state.getARandomDirectionFrom(locAnt, dir))
+			//if(state.getARandomDirectionFrom(locAnt, dir))
 		{
 			antOrder.setOrderType(Order::OrderType::Explore);
 			antOrder.setMove(dir);
@@ -114,30 +165,3 @@ void Bot::issueMoves()
 		}
 	}
 }
-
-//makes the bots moves for the turn
-void Bot::makeMoves()
-{
-	for(auto& ant : state.myAnts)
-	{
-		if(ant.getOrder().getOrderType() != Order::OrderType::Idle)
-		{
-			state.sendMoveToEngine(ant);
-		}
-	}
-
-    Bug::bug() << "time taken: " << state.timer.getTime() << "ms" << endl << endl;
-};
-
-//finishes the turn
-void Bot::endTurn()
-{
-    if(state.turn > 0)
-    {
-		state.reset();
-		state.markPreviousAnts();
-	}
-    state.turn++;
-
-    cout << "go" << endl;
-};

@@ -45,7 +45,6 @@ public:
     void sendMoveToEngine(Ant& ant);
 
 	bool getClosestFood(Ant& ant, Location &locClosestFood);
-	bool isAnotherAntCloserToThisFood(const Location& locFood, double dDistToAnt);
 
 	bool getAMovingDirectionTo(const Ant &ant, const Location &locTo, AntDirection& aDirection);
 	bool getARandomDirectionFrom(const Location& locFrom, AntDirection& dirRandom);
@@ -67,10 +66,8 @@ public:
 
 	void sendAntToFood(const Ant& ant, const Location& locFood);
 	Ant* getCollectingAntFor(Location& locFood);
-	void resetFoodOrders() { m_foodOrders.clear(); }
-
+	
 private:
-	std::map<Location, Location> m_foodOrders;
 };
 
 std::ostream& operator<<(std::ostream &os, const State &state);
