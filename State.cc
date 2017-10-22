@@ -97,14 +97,14 @@ bool State::getARandomDirectionFrom(const Location& locFrom, AntDirection& dirRa
 bool State::getAnExploringDirection(Ant& ant, AntDirection& dirExploreTo)
 {
 	//	sort possible Directions by Score, low to high
-	std::map<int, AntDirection> mapDirByScore;
+	std::multimap<int, AntDirection> mapDirByScore;
 	for(auto dir : AllAntDirections)
 	{
 		Location loc = Location::getLocation(ant.getLocation(), dir);
 		if(isTargetPositionFreeToGo(loc))
 		{
 			const Square& sq = Map::map()[loc.row][loc.col];
-			mapDirByScore[sq.pathScore] = dir;
+			mapDirByScore.insert(make_pair(sq.pathScore, dir));
 		}
 	}
 
@@ -115,7 +115,7 @@ bool State::getAnExploringDirection(Ant& ant, AntDirection& dirExploreTo)
 	}
 
 	//	picks out of available directions that one with the best score
-	for(std::map<int, AntDirection>::reverse_iterator itScoreHighToLow = mapDirByScore.rbegin();
+	for(std::multimap<int, AntDirection>::reverse_iterator itScoreHighToLow = mapDirByScore.rbegin();
 		itScoreHighToLow != mapDirByScore.rend(); ++itScoreHighToLow)
 	{
 		AntDirection dir = itScoreHighToLow->second;
