@@ -83,7 +83,10 @@ void Bot::issueFood()
 		bool bFoundCloseFood = state.getClosestFood(ant, locClosestFood); //TODO: check real distance?
 		if(bFoundCloseFood)
 		{
-			foodOrders[locClosestFood] = ant.getLocation();
+			if(!isAnotherAntCloserToThisFood(foodOrders, locClosestFood, ant))
+			{
+				foodOrders[locClosestFood] = ant.getLocation();
+			}
 		}
 	}
 
@@ -135,6 +138,24 @@ Ant* Bot::getCollectingAntFor(std::map<Location, Location>& m_foodOrders, const 
 	}
 
 	return nullptr;
+}
+
+//	checks if an ant is sent to that food already and if so, is that one is closer
+bool Bot::isAnotherAntCloserToThisFood(std::map<Location, Location>& foodOrders, const Location& locFood, Ant& ant) const
+{
+	auto existingFoodOrder = foodOrders.find(locFood);
+	if(existingFoodOrder != foodOrders.end())
+	{
+		const Location& otherAntForFood = existingFoodOrder->second;
+		double dDistOtherAnt = Location::distance(otherAntForFood, locFood);
+		double dDistAnt = Location::distance(ant.getLocation(), locFood);
+		if(dDistOtherAnt < dDistAnt)
+		{
+			return true;
+		}
+	}
+
+	return false;
 }
 
 void Bot::issueExploring()

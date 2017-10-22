@@ -23,5 +23,7 @@ public:
 	
 	State state;
 
+private:
 	Ant* getCollectingAntFor(std::map<Location, Location>& foodOrders, const Location& locFood);
+	bool isAnotherAntCloserToThisFood(std::map<Location, Location>& foodOrders, const Location& locFood, Ant& ant) const;
 };
