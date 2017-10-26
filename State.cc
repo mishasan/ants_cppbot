@@ -76,9 +76,9 @@ bool State::getARandomDirectionFrom(const Location& locFrom, AntDirection& dirRa
 {
 	vector<AntDirection> vAllDirections(AllAntDirections.begin(), AllAntDirections.end());
 #ifdef _DEBUG
-	unsigned int ranseed = (unsigned int)seed; 
+	unsigned int ranseed = (unsigned int) seed; 
 #else
-	unsigned int ranseed = std::chrono::system_clock::now().time_since_epoch().count();
+	unsigned int ranseed = (unsigned int) std::chrono::system_clock::now().time_since_epoch().count();
 #endif // _DEBUG
 	std::shuffle(vAllDirections.begin(), vAllDirections.end(), std::default_random_engine(ranseed));
 	for(auto dir : vAllDirections)
