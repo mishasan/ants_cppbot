@@ -171,23 +171,29 @@ bool State::getClosestFood(Ant& ant, Location &locClosestFood)
 	}
 
 	//	find close food sorted by distance to Location
-	const double dMaxDistanceToFood = 2 * viewradius;
-	double dMinDist = std::numeric_limits<double>::max();
+	const double dMaxDistanceToFood = 3 * viewradius;
+	double dMinPathLength = std::numeric_limits<double>::max();
 	std::vector<Location>::iterator itClosestFood = food.end();
+	vector<AntDirection> path;
 	for(std::vector<Location>::iterator itFood = food.begin(); itFood != food.end(); ++itFood)
 	{
-		//	TODO: use path finding mechanism to find true distance
 		const double dDistToAnt = Location::distance(locAnt, *itFood);
 
 		//	only go to food thats not too far away
 		if(dDistToAnt > dMaxDistanceToFood)
 			continue;
 
+		path.clear();
+		if(!m_PathFinder.findPath(ant.getLocation(), *itFood, path))
+			continue;
+		
+		double dPathLength = (double) path.size();
+
 		//	remember closest food
-		if(dDistToAnt < dMinDist)
+		if(dPathLength < dMinPathLength)
 		{
 			itClosestFood = itFood;
-			dMinDist = dDistToAnt;
+			dMinPathLength = dPathLength;
 		}
 	}
 	
