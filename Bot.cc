@@ -49,7 +49,7 @@ void Bot::makeMoves()
 {
 	for(auto& ant : state.myAnts)
 	{
-		if(ant.getOrder().getOrderType() != Order::OrderType::Idle)
+		if(ant.hasOrder())
 		{
 			state.sendMoveToEngine(ant);
 		}
@@ -180,7 +180,7 @@ void Bot::issueExploring()
 		}
 
 		ant.setOrder(antOrder);
-		if(ant.getOrder().getOrderType() != Order::OrderType::Idle)
+		if(ant.hasOrder())
 		{
 			Map::map().makeMoveLocal(ant);
 		}

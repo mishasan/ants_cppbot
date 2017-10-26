@@ -17,6 +17,7 @@ public:
 	Location getNewLocation() const;
 	void moveByOrder();
 
+	bool hasOrder() const {return m_order.getOrderType() != Order::OrderType::Idle; }
 	void setOrder(const Order& order);
 	const Order& getOrder() const;
 	void saveLastOrder();
