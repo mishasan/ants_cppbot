@@ -2,6 +2,8 @@
 #include "Ant.h"
 #include "Map.h"
 
+#include <set>
+
 using namespace std;
 
 //	plays a single game of Ants.
@@ -74,38 +76,108 @@ void Bot::endTurn()
 //	checks available food and sends Ants to each if reasonable 
 void Bot::issueFood()
 {
-	std::map<Location, Location> foodOrders;
+	//	create list of not assigned ants
+	std::set<Ant*> antsForFood;
+	for(Ant& pAnt : state.myAnts)
+		antsForFood.insert(&pAnt);
+	 
+	std::map<Location, Ant*> foodOrders;
 
-	//	find closest Ant to each food
-	for(auto& ant : state.myAnts)
+	loadPreviousFoodOrders(antsForFood, foodOrders);
+
+	findClosestFoodToAnts(antsForFood, foodOrders);
+
+	assignBestMovesToFood(foodOrders);
+}
+
+//	checks if an ant is sent to that food already and if so, is that one is closer
+bool Bot::isAnotherAntCloserToThisFood(std::map<Location,Ant*>& foodOrders, const Location& locFood, Ant& ant) const
+{
+	auto existingFoodOrder = foodOrders.find(locFood);
+	if(existingFoodOrder != foodOrders.end())
 	{
+		const Ant* pOtherAntForFood = existingFoodOrder->second;
+		double dDistOtherAnt = Location::distance(pOtherAntForFood->getLocation(), locFood);
+		double dDistAnt = Location::distance(ant.getLocation(), locFood);
+		if(dDistOtherAnt < dDistAnt)
+		{
+			return true;
+		}
+	}
+
+	return false;
+}
+
+//	checks Food Order of Ants from previous turn and matches them to still available food
+void Bot::loadPreviousFoodOrders(std::set<Ant*>& ants, std::map<Location, Ant*>& foodOrders)
+{
+	std::vector<Ant*> vUsedAnts;
+	for(Ant* pAnt : ants)
+	{
+		const Order& antLastOrder = pAnt->getLastOrder();
+		if(pAnt->hasOrder() || antLastOrder.getOrderType() != Order::OrderType::Food)
+		{
+			continue;
+		}
+		const Location& lastTarget = antLastOrder.getTarget();
+		vector<Location>::iterator itFoodFnd = find_if(state.food.begin(), state.food.end(),
+												[&lastTarget](Location& locFood) {return locFood == lastTarget; });
+		if(itFoodFnd != state.food.end())
+		{
+			foodOrders[lastTarget] = pAnt;
+			vUsedAnts.push_back(pAnt);
+			state.food.erase(itFoodFnd);
+		}
+	}
+
+	for(Ant* pAnt : vUsedAnts)
+	{
+		ants.erase(pAnt);
+	}
+}
+
+//	find closest food for not assigned Ants
+void Bot::findClosestFoodToAnts(std::set<Ant*>& ants, std::map<Location, Ant*>& foodOrders)
+{
+	vector<Ant*> vUsedAnts;
+	for(Ant* pAnt : ants)
+	{
+		if(pAnt->hasOrder())
+			continue;
+
 		Location locClosestFood;
-		bool bFoundCloseFood = state.getClosestFood(ant, locClosestFood); //TODO: check real distance?
+		bool bFoundCloseFood = state.getClosestFood(*pAnt, locClosestFood);
 		if(bFoundCloseFood)
 		{
-			if(!isAnotherAntCloserToThisFood(foodOrders, locClosestFood, ant))
+			if(!isAnotherAntCloserToThisFood(foodOrders, locClosestFood, *pAnt))
 			{
-				foodOrders[locClosestFood] = ant.getLocation();
+				foodOrders[locClosestFood] = pAnt;
+				vUsedAnts.push_back(pAnt);
 			}
 		}
 	}
 
-	//	find best move to food for closest Ant
+	for(Ant* pAnt : vUsedAnts)
+	{
+		ants.erase(pAnt);
+	}
+}
+
+//	find best move to food for closest Ant
+void Bot::assignBestMovesToFood(std::map<Location, Ant*>& foodOrders)
+{
 	for(const auto& foodOrder : foodOrders)
 	{
-		//	only food with an Ant close enough will be taken care of
-		const Location& locFood = foodOrder.first;
-		Ant *pAnt = getCollectingAntFor(foodOrders, locFood);
-		if(pAnt == nullptr)
-			continue;
+		Ant *pAnt = foodOrder.second;
 
 		//	find best move
 		Order antOrder;
 		AntDirection dirFood = AntDirection::N;
+		const Location& locFood = foodOrder.first;
 		bool bFoundGoodDirection = state.getAMovingDirectionTo(*pAnt, locFood, dirFood);
 		if(bFoundGoodDirection)
 		{
-			//	send the Ant to this food
+			//	send Ant to this food
 			antOrder.setOrderType(Order::OrderType::Food);
 			antOrder.setMove(dirFood);
 			antOrder.setTarget(locFood);
@@ -118,44 +190,6 @@ void Bot::issueFood()
 			Map::map().makeMoveLocal(*pAnt);
 		}
 	}
-}
-
-//	checks the food local orders and returns the (one) Ant which is going for this food
-//	nullptr, if there is no Ant going for this food
-Ant* Bot::getCollectingAntFor(std::map<Location, Location>& m_foodOrders, const Location& locFood)
-{
-	const auto& existingFoodOrder = m_foodOrders.find(locFood);
-	if(existingFoodOrder != m_foodOrders.end())
-	{
-		const Location& antLoc = existingFoodOrder->second;
-		for(auto& ant : state.myAnts)
-		{
-			if(ant.getLocation() == antLoc)
-			{
-				return &ant;
-			}
-		}
-	}
-
-	return nullptr;
-}
-
-//	checks if an ant is sent to that food already and if so, is that one is closer
-bool Bot::isAnotherAntCloserToThisFood(std::map<Location, Location>& foodOrders, const Location& locFood, Ant& ant) const
-{
-	auto existingFoodOrder = foodOrders.find(locFood);
-	if(existingFoodOrder != foodOrders.end())
-	{
-		const Location& otherAntForFood = existingFoodOrder->second;
-		double dDistOtherAnt = Location::distance(otherAntForFood, locFood);
-		double dDistAnt = Location::distance(ant.getLocation(), locFood);
-		if(dDistOtherAnt < dDistAnt)
-		{
-			return true;
-		}
-	}
-
-	return false;
 }
 
 void Bot::issueExploring()
