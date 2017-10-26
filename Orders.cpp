@@ -52,12 +52,14 @@ void Order::setTarget(const Location& locTarget)
 	m_Target = locTarget;
 }
 
+#ifdef _DEBUG
 std::string Order::print() const
 {
 	std::stringstream s;
 	s << "DirGoTo: " << m_dirGoTo << " Target: " << m_Target << " OT: " << m_OrderType;
 	return s.str();
 }
+#endif // _DEBUG
 
 std::ostream& operator<<(std::ostream &os, const Order::OrderType& ot)
 {
