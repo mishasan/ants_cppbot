@@ -56,8 +56,6 @@ public:
 	bool isMoveALoop(const Ant& ant, const AntDirection dir);
 
     void updateVisionInformation();
-	void updatePathScore();
-	void calcPathScore(Location& loc);
 	
 	void addAnt(unsigned int row, unsigned int col, unsigned int player);
 	Ant* getAntByLocation(const Location& loc);

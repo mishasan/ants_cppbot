@@ -33,10 +33,13 @@ public:
 
 	void printKnownMap(std::ostream& os);
 	void printScoreMap(std::ostream& os);
+	void updatePathScore();
+	void calcPathScore(Location& loc);
 
 private:
 	Map();
 	~Map();
+	
 	unsigned int m_rows, m_cols;
 
 	std::vector<std::vector<Square> > m_grid;

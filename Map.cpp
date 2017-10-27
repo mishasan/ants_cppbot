@@ -89,6 +89,93 @@ void Map::printKnownMap(ostream& os)
 	os << endl;
 }
 
+//	calculating a score for each Square in the map representing closeness to water [0...1] 0 very close, 1 far away
+void Map::updatePathScore()
+{
+	//	TODO: use spread alg to just cover areas which are visible to update that map
+	//	TODO: count unfogged squares, if everything is uncovered, stop updating path score
+
+	for(unsigned int row = 0; row < Map::map().rows(); ++row)
+	{
+		for(unsigned int col = 0; col < Map::map().cols(); ++col)
+		{
+			Location loc(row, col);
+			calcPathScore(loc);
+		}
+	}
+}
+
+//	calcs score for a square being close to water
+void Map::calcPathScore(Location& loc)
+{
+	Square& sq = (*this)[loc.row][loc.col];
+	if(sq.pathScoreComplete)
+	{
+		return;
+	}
+
+	//	if square wasn't visible at least once, can't tell
+	if(sq.isFogged())
+	{
+		sq.pathScore = PATHSCORE_UNKNOWN;
+		sq.pathScoreComplete = false;
+		return;
+	}
+
+	//	cant move on water, give lowest score right away
+	if(sq.IsWater())
+	{
+		sq.pathScore = 0;
+		sq.pathScoreComplete = true;
+		return;
+	}
+
+	//	size for 2D neighborhood of one square
+	const int neighbsize = 1; // TODO: make global and able to adapt to maze, viewradius etc
+
+	int iUnfoggedSquaresTotal = 0;
+	int iWaterSquaresTotal = 0;
+	int iLandSquaresTotal = 0;
+	int iWaterDirectNgh = 0;
+
+	for(int col = -neighbsize; col <= neighbsize; ++col)
+	{
+		for(int row = -neighbsize; row <= neighbsize; ++row)
+		{
+			const Location locRelative = Location::getLocationRelative(loc, col, row);
+			Square& sqRel = (*this)[locRelative.row][locRelative.col];
+			if(sqRel.isFogged())
+			{
+				continue;
+			}
+
+			//	count water and land squares in neighborhood
+			if(sqRel.IsWater())
+			{
+				iWaterSquaresTotal++;
+				if((abs(col) < 2) && (abs(row) < 2))
+				{
+					iWaterDirectNgh++;
+				}
+			}
+			else if(sqRel.IsLand())
+			{
+				iLandSquaresTotal++;
+			}
+			iUnfoggedSquaresTotal++;
+		}
+	}
+
+	//	Score #Land to #Water - a lot of Water around makes a low Score, a lot of Land a high Score
+	//	a lot of fogged squares makes a high score as well, so interesting to explore
+	const int nghSize = (2 * neighbsize + 1) * (2 * neighbsize + 1);
+	sq.pathScore = nghSize - iWaterDirectNgh;
+
+	//	Do I need to check this square again because of not visible neighboring squares?
+	bool bAllNeighborSquaresVisible = iUnfoggedSquaresTotal == nghSize;
+	sq.pathScoreComplete = bAllNeighborSquaresVisible;
+}
+
 void Map::printScoreMap(std::ostream& os)
 {
 	for(unsigned int row=0; row < m_rows; row++)
@@ -109,3 +196,4 @@ void Map::printScoreMap(std::ostream& os)
 	}
 	os << endl;
 }
+

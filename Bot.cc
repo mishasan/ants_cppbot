@@ -26,7 +26,7 @@ void Bot::playGame()
 
 		state.updateAntList();
         state.updateVisionInformation();
-		state.updatePathScore();
+		Map::map().updatePathScore();
 
 		Bug::bug() << "turn " << state.turn << ":" << endl;
 		Bug::bug() << state << endl;
