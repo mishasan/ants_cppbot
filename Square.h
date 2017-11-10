@@ -26,7 +26,7 @@ struct Square
     //resets the information for the square except water information
     void reset();
 
-	bool isFogged();
+	bool IsFogged() const;
 
 	char toChar() const;
 

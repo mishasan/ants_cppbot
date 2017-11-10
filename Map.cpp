@@ -115,7 +115,7 @@ void Map::calcPathScore(Location& loc)
 	}
 
 	//	if square wasn't visible at least once, can't tell
-	if(sq.isFogged())
+	if(sq.IsFogged())
 	{
 		sq.pathScore = PATHSCORE_UNKNOWN;
 		sq.pathScoreComplete = false;
@@ -144,7 +144,7 @@ void Map::calcPathScore(Location& loc)
 		{
 			const Location locRelative = Location::getLocationRelative(loc, col, row);
 			Square& sqRel = (*this)[locRelative.row][locRelative.col];
-			if(sqRel.isFogged())
+			if(sqRel.IsFogged())
 			{
 				continue;
 			}

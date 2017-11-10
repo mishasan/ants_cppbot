@@ -15,7 +15,7 @@ void Square::reset()
 	deadAnts.clear();
 }
 
-bool Square::isFogged()
+bool Square::IsFogged() const
 {
 	return !(isWater || isLand);
 }

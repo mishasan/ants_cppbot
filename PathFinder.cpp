@@ -96,7 +96,10 @@ bool PathFinder::findPath(const Location& locFrom, const Location& locTo, std::v
 		for(auto d : AllAntDirections)
 		{
 			Location locChild(Location::getLocation(nodeParent.getLocation(), d));
-			if(Map::map()(locChild).IsLand() && m_closedNodesMap[At(locChild)] != 1)
+			const bool bLocChildProcessed = m_closedNodesMap[At(locChild)] == 1;
+			const Square& sq = Map::map()(locChild);
+			const bool bLocChildWalkable = sq.IsLand() || sq.IsFogged(); //	either Land or not Visible yet, could be both Water or Land
+			if(bLocChildWalkable && !bLocChildProcessed)
 			{
 				// generate a child node
 				Node nodeChild(locChild, nodeParent.getTraveledDistance(), nodeParent.getPriority());
