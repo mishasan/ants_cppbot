@@ -196,17 +196,17 @@ void Bot::issueExploring()
 {
 	for(auto& ant : state.myAnts)
 	{
-		Order antOrder = ant.getOrder();
-
 		//	only send exploring, if there is no other order
-		if(antOrder.getOrderType() != Order::OrderType::Idle)
+		if(ant.hasOrder())
 		{
 			continue;
 		}
 
+		Order antOrder = ant.getOrder();
 		AntDirection dir = AntDirection::N;
-		if(state.getAnExploringDirection(ant, dir))
-			//if(state.getARandomDirectionFrom(locAnt, dir))
+		if(state.findAnExploringDirection(ant, dir))
+		//if(state.getAnExploringDirection(ant, dir))
+		//if(state.getARandomDirectionFrom(locAnt, dir))
 		{
 			antOrder.setOrderType(Order::OrderType::Explore);
 			antOrder.setMove(dir);
