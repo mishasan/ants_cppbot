@@ -197,3 +197,35 @@ void Map::printScoreMap(std::ostream& os)
 	os << endl;
 }
 
+//	spread in circles from Start Location and check neighboring Squares for Condition
+//@return first Square that meets condition
+bool Map::findSquareNeighborIf(const Location& loc, unsigned int neighborhoodRadius, bool (Square::*pF)() const, Location& locNgh)
+{
+	const int x = loc.row, y = loc.col;
+	for(unsigned int d = 1; d <= neighborhoodRadius; ++d)
+	{
+		if(findSquareNeighborIfLine(x - d, x + d, y - d, y - d, pF, locNgh) ||	//	top
+		   findSquareNeighborIfLine(x - d, x + d, y + d, y + d, pF, locNgh) ||	//	bottom
+		   findSquareNeighborIfLine(x - d, x - d, y - d + 1, y + d - 1, pF, locNgh) ||	//	left
+		   findSquareNeighborIfLine(x + d, x + d, y - d + 1, y + d - 1, pF, locNgh))	//	right
+			return true;
+	}
+	return false;
+}
+
+bool Map::findSquareNeighborIfLine(int iMin, int iMax, int jMin, int jMax, bool (Square::*pF)() const, Location& locNgh)
+{
+	for (int i = iMin; i <= iMax; ++i)
+	{
+		for (int j = jMin; j <= jMax; ++j)
+		{
+			locNgh = Location::getLocation(i, j);
+			Square& sq = (*this)(locNgh);
+			if ((sq.*pF)())
+			{
+				return true;
+			}
+		}
+	}
+	return false;
+}

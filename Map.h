@@ -36,10 +36,14 @@ public:
 	void updatePathScore();
 	void calcPathScore(Location& loc);
 
+	bool findSquareNeighborIf(const Location& loc, unsigned int neighborhoodRadius, bool (Square::*pF)() const, Location& locNgh);
+
 private:
 	Map();
 	~Map();
-	
+
+	bool findSquareNeighborIfLine(int iMin, int iMax, int jMin, int jMax, bool (Square::*pF)() const, Location& locNgh);
+
 	unsigned int m_rows, m_cols;
 
 	std::vector<std::vector<Square> > m_grid;
