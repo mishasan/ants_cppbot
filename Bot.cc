@@ -204,8 +204,7 @@ void Bot::issueExploring()
 
 		Order antOrder = ant.getOrder();
 		AntDirection dir = AntDirection::N;
-		if(state.findAnExploringDirection(ant, dir))
-		//if(state.getAnExploringDirection(ant, dir))
+		if(state.getAnExploringDirection(ant, dir))
 		//if(state.getARandomDirectionFrom(locAnt, dir))
 		{
 			antOrder.setOrderType(Order::OrderType::Explore);
